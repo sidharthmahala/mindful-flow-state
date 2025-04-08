@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { TaskProvider } from '@/contexts/TaskContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
 import TaskInput from '@/components/TaskInput';
 import TaskList from '@/components/TaskList';
 import UpcomingView from '@/components/UpcomingView';
@@ -9,7 +8,7 @@ import MindDump from '@/components/MindDump';
 import AppHeader from '@/components/AppHeader';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { Leaf, CheckCircle, Star, Calendar, Book, Archive } from 'lucide-react';
+import { CheckCircle, Star, Calendar, Book, Archive } from 'lucide-react';
 import { TaskCategory } from '@/types/task';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -89,7 +88,7 @@ const AppContent = () => {
     <div className="min-h-screen flex flex-col items-center bg-background">
       {!mounted ? (
         <div className="fixed inset-0 flex items-center justify-center">
-          <Leaf className="w-10 h-10 text-zen animate-pulse-light" />
+          <div className="w-10 h-10 animate-pulse-light bg-primary/80 rounded-full"></div>
         </div>
       ) : (
         <div className="container max-w-md px-4 py-8">
@@ -131,11 +130,9 @@ const AppContent = () => {
 
 const Index = () => {
   return (
-    <ThemeProvider>
-      <TaskProvider>
-        <AppContent />
-      </TaskProvider>
-    </ThemeProvider>
+    <TaskProvider>
+      <AppContent />
+    </TaskProvider>
   );
 };
 

@@ -15,11 +15,11 @@ export const ThemeToggle = () => {
   const { setTheme, theme, colorScheme, setColorScheme } = useTheme();
   
   const colorOptions = [
-    { name: 'Calm', value: 'calm' as const },
-    { name: 'Ocean', value: 'ocean' as const },
-    { name: 'Forest', value: 'forest' as const },
     { name: 'Lavender', value: 'lavender' as const },
-    { name: 'Sunset', value: 'sunset' as const },
+    { name: 'Mint', value: 'mint' as const },
+    { name: 'Peach', value: 'peach' as const },
+    { name: 'Sky', value: 'sky' as const },
+    { name: 'Lemon', value: 'lemon' as const },
   ];
 
   return (
@@ -64,11 +64,11 @@ export const ThemeToggle = () => {
 
 function getColorClass(scheme: string): string {
   switch (scheme) {
-    case 'calm': return 'bg-zen';
-    case 'ocean': return 'bg-blue-400';
-    case 'forest': return 'bg-green-500';
-    case 'lavender': return 'bg-purple-400';
-    case 'sunset': return 'bg-amber-400';
-    default: return 'bg-zen';
+    case 'lavender': return 'bg-purple-200';
+    case 'mint': return 'bg-green-200';
+    case 'peach': return 'bg-orange-200';
+    case 'sky': return 'bg-blue-200';
+    case 'lemon': return 'bg-yellow-200';
+    default: return 'bg-purple-200';
   }
 }

@@ -6,98 +6,106 @@
 @layer base {
   /* Light mode - default */
   :root {
-    --background: 180 33% 97%;
-    --foreground: 185 30% 25%;
+    --background: 240 30% 98%;
+    --foreground: 220 25% 25%;
 
     --card: 0 0% 100%;
-    --card-foreground: 185 30% 25%;
+    --card-foreground: 220 25% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 185 30% 25%;
+    --popover-foreground: 220 25% 25%;
 
-    --primary: 174 29% 55%;
+    --primary: 250 95% 76%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 157 25% 66%;
-    --secondary-foreground: 181 29% 27%;
+    --secondary: 250 70% 86%;
+    --secondary-foreground: 240 20% 25%;
 
-    --muted: 55 67% 92%;
-    --muted-foreground: 174 13% 45%;
+    --muted: 240 20% 95%;
+    --muted-foreground: 240 20% 45%;
 
-    --accent: 82 25% 78%;
-    --accent-foreground: 174 36% 29%;
+    --accent: 250 70% 90%;
+    --accent-foreground: 240 25% 25%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 157 25% 83%;
-    --input: 157 25% 83%;
-    --ring: 174 29% 55%;
+    --border: 240 20% 90%;
+    --input: 240 20% 90%;
+    --ring: 250 95% 76%;
 
     --radius: 0.75rem;
   }
 
   /* Dark mode */
   .dark {
-    --background: 196 33% 10%;
-    --foreground: 185 5% 90%;
+    --background: 225 25% 12%;
+    --foreground: 240 10% 90%;
 
-    --card: 195 40% 14%;
-    --card-foreground: 185 10% 95%;
+    --card: 225 30% 16%;
+    --card-foreground: 240 10% 95%;
 
-    --popover: 195 40% 14%;
-    --popover-foreground: 185 10% 95%;
+    --popover: 225 30% 16%;
+    --popover-foreground: 240 10% 95%;
 
-    --primary: 174 29% 45%;
+    --primary: 250 80% 70%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 157 25% 40%;
-    --secondary-foreground: 180 10% 95%;
+    --secondary: 250 50% 50%;
+    --secondary-foreground: 240 10% 95%;
 
-    --muted: 195 20% 20%;
-    --muted-foreground: 174 13% 75%;
+    --muted: 225 20% 20%;
+    --muted-foreground: 240 10% 70%;
 
-    --accent: 82 20% 25%;
-    --accent-foreground: 174 36% 85%;
+    --accent: 250 40% 40%;
+    --accent-foreground: 240 10% 95%;
 
     --destructive: 0 84.2% 40.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 157 10% 30%;
-    --input: 157 10% 30%;
-    --ring: 174 29% 40%;
+    --border: 225 20% 25%;
+    --input: 225 20% 25%;
+    --ring: 250 80% 60%;
   }
 
-  /* Ocean theme - applied when data-color-scheme is ocean */
-  [data-color-scheme="ocean"] {
-    --primary: 210 70% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 199 70% 65%;
-    --accent: 190 90% 80%;
-  }
-
-  /* Forest theme */
-  [data-color-scheme="forest"] {
-    --primary: 120 30% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 140 30% 55%;
-    --accent: 90 40% 75%;
-  }
-
-  /* Lavender theme */
+  /* Lavender theme - soft purple pastel */
   [data-color-scheme="lavender"] {
-    --primary: 270 50% 60%;
+    --primary: 270 70% 80%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 285 40% 70%;
-    --accent: 260 50% 85%;
+    --secondary: 280 60% 85%;
+    --accent: 265 70% 90%;
   }
 
-  /* Sunset theme */
-  [data-color-scheme="sunset"] {
-    --primary: 30 90% 60%;
+  /* Mint theme - soft green pastel */
+  [data-color-scheme="mint"] {
+    --primary: 150 60% 80%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 20 80% 70%;
-    --accent: 40 90% 80%;
+    --secondary: 160 50% 85%;
+    --accent: 140 60% 90%;
+  }
+
+  /* Peach theme - soft orange pastel */
+  [data-color-scheme="peach"] {
+    --primary: 20 90% 80%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 80% 85%;
+    --accent: 15 90% 90%;
+  }
+
+  /* Sky theme - soft blue pastel */
+  [data-color-scheme="sky"] {
+    --primary: 200 70% 80%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 60% 85%;
+    --accent: 195 70% 90%;
+  }
+
+  /* Lemon theme - soft yellow pastel */
+  [data-color-scheme="lemon"] {
+    --primary: 50 90% 80%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 80% 85%;
+    --accent: 55 90% 90%;
   }
 
   * {
@@ -129,10 +137,6 @@
   .zen-micro-animate {
     @apply transition-all duration-300 hover:scale-[1.02];
   }
-  
-  .leaf-fall {
-    @apply animate-leaf-fall;
-  }
 }
 
 @keyframes floatIn {
@@ -163,22 +167,6 @@
 .float-in-delay-3 {
   animation: floatIn 0.4s 0.3s ease-out forwards;
   opacity: 0;
-}
-
-/* Plant Growth Animation for Gamification */
-@keyframes leafGrow {
-  0% {
-    transform: scale(0.8) translateY(3px);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-
-.leaf-grow {
-  animation: leafGrow 1s ease-out forwards;
 }
 
 /* Theme transition effects */

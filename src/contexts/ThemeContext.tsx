@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
-type ColorScheme = 'calm' | 'ocean' | 'forest' | 'lavender' | 'sunset';
+type ColorScheme = 'lavender' | 'mint' | 'peach' | 'sky' | 'lemon';
 
 interface ThemeContextType {
   theme: Theme;
@@ -35,7 +35,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>(() => {
     const storedScheme = localStorage.getItem('clarity-color-scheme');
-    return (storedScheme as ColorScheme) || 'calm';
+    return (storedScheme as ColorScheme) || 'lavender';
   });
   
   const [backgroundImage, setBackgroundImageState] = useState<string | null>(() => {
