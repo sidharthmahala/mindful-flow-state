@@ -1,4 +1,3 @@
-
 import { useState, KeyboardEvent } from 'react';
 import { useTaskContext } from '@/contexts/TaskContext';
 import { Button } from '@/components/ui/button';
@@ -391,11 +390,10 @@ const cn = (...classes: any[]) => {
 };
 
 // Priority labels for display
-const priorityLabels: Record<TaskPriority, string> = {
+const priorityLabels: Record<NonNullable<TaskPriority>, string> = {
   'must': 'Must Do',
   'should': 'Should Do',
-  'nice': 'Nice to Do',
-  'null': 'Priority'
+  'nice': 'Nice to Do'
 };
 
 export default TaskInput;

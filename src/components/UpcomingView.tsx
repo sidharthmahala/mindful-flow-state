@@ -62,16 +62,16 @@ const UpcomingView = () => {
           onSelect={setSelectedDate}
           className="mx-auto"
           components={{
-            Day: ({ day, ...props }) => (
+            Day: ({ date, ...props }) => (
               <Button
                 {...props}
                 className={cn(
                   props.className,
-                  datesWithTasks.includes(day.toISOString().split('T')[0]) &&
+                  datesWithTasks.includes(date.toISOString().split('T')[0]) &&
                   "bg-zen-light font-medium text-zen"
                 )}
               >
-                {renderCalendarDay(day)}
+                {renderCalendarDay(date)}
               </Button>
             )
           }}
