@@ -15,11 +15,11 @@ export const ThemeToggle = () => {
   const { setTheme, theme, colorScheme, setColorScheme } = useTheme();
   
   const colorOptions = [
-    { name: 'Calm', value: 'calm' },
-    { name: 'Ocean', value: 'ocean' },
-    { name: 'Forest', value: 'forest' },
-    { name: 'Lavender', value: 'lavender' },
-    { name: 'Sunset', value: 'sunset' },
+    { name: 'Calm', value: 'calm' as const },
+    { name: 'Ocean', value: 'ocean' as const },
+    { name: 'Forest', value: 'forest' as const },
+    { name: 'Lavender', value: 'lavender' as const },
+    { name: 'Sunset', value: 'sunset' as const },
   ];
 
   return (
