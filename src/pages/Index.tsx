@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { TaskProvider } from '@/contexts/TaskContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import TaskInput from '@/components/TaskInput';
 import TaskList from '@/components/TaskList';
 import UpcomingView from '@/components/UpcomingView';
@@ -8,13 +9,15 @@ import MindDump from '@/components/MindDump';
 import AppHeader from '@/components/AppHeader';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { Leaf, Sun, ListChecks, Calendar, Moon } from 'lucide-react';
+import { Leaf, CheckCircle, Star, Calendar, Book, Archive } from 'lucide-react';
 import { TaskCategory } from '@/types/task';
+import { useTheme } from '@/contexts/ThemeContext';
 
-const Index = () => {
+const AppContent = () => {
   const [activeTab, setActiveTab] = useState<string>('today');
   const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
+  const { backgroundImage } = useTheme();
 
   // Animation control to ensure components only animate after initial mount
   useEffect(() => {
@@ -83,37 +86,56 @@ const Index = () => {
   };
 
   return (
-    <TaskProvider>
-      <div className="min-h-screen flex flex-col items-center bg-background">
-        {!mounted ? (
-          <div className="fixed inset-0 flex items-center justify-center">
-            <Leaf className="w-10 h-10 text-zen animate-pulse-light" />
-          </div>
-        ) : (
-          <div className="container max-w-md px-4 py-8">
-            <AppHeader 
-              activeTab={activeTab} 
-              setActiveTab={setActiveTab} 
-              appName="Clarity"
-              tabs={[
-                { id: 'today', label: 'Today', icon: Sun },
-                { id: 'rituals', label: 'Rituals', icon: ListChecks },
-                { id: 'upcoming', label: 'Upcoming', icon: Calendar },
-                { id: 'someday', label: 'Someday', icon: Calendar },
-                { id: 'notes', label: 'Notes', icon: Moon }
-              ]}
-            />
-            {getTabContent()}
+    <div className="min-h-screen flex flex-col items-center bg-background">
+      {!mounted ? (
+        <div className="fixed inset-0 flex items-center justify-center">
+          <Leaf className="w-10 h-10 text-zen animate-pulse-light" />
+        </div>
+      ) : (
+        <div className="container max-w-md px-4 py-8">
+          <AppHeader 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab} 
+            appName="Clarity"
+            tabs={[
+              { id: 'today', label: 'Today', icon: CheckCircle },
+              { id: 'rituals', label: 'Rituals', icon: Star },
+              { id: 'upcoming', label: 'Upcoming', icon: Calendar },
+              { id: 'someday', label: 'Someday', icon: Archive },
+              { id: 'notes', label: 'Notes', icon: Book }
+            ]}
+          />
+          {getTabContent()}
 
-            <footer className="mt-auto pt-10 pb-4 text-center text-xs text-muted-foreground">
-              <p>
-                "Small steps, taken consistently, create lasting change."
-              </p>
-            </footer>
-          </div>
-        )}
-      </div>
-    </TaskProvider>
+          <footer className="mt-auto pt-10 pb-4 text-center text-xs text-muted-foreground">
+            <p>
+              "Small steps, taken consistently, create lasting change."
+            </p>
+          </footer>
+        </div>
+      )}
+      
+      {backgroundImage && (
+        <div 
+          className="fixed inset-0 -z-10 opacity-25 dark:opacity-15" 
+          style={{ 
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }} 
+        />
+      )}
+    </div>
+  );
+};
+
+const Index = () => {
+  return (
+    <ThemeProvider>
+      <TaskProvider>
+        <AppContent />
+      </TaskProvider>
+    </ThemeProvider>
   );
 };
 

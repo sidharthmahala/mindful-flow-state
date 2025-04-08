@@ -1,5 +1,6 @@
 
-import { Sun, Moon, Calendar, Leaf, ListChecks } from 'lucide-react';
+import { CheckCircle, Book, Calendar, Leaf, Star, Archive, MoonStar, SunMoon } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 interface AppHeaderProps {
   activeTab: string;
@@ -10,28 +11,31 @@ interface AppHeaderProps {
 
 const AppHeader: React.FC<AppHeaderProps> = ({ activeTab, setActiveTab, appName = 'ZenDo', tabs }) => {
   const defaultTabs = [
-    { id: 'today', label: 'Today', icon: Sun },
-    { id: 'rituals', label: 'Daily Rituals', icon: ListChecks },
-    { id: 'someday', label: 'Someday/Maybe', icon: Calendar }
+    { id: 'today', label: 'Today', icon: CheckCircle },
+    { id: 'rituals', label: 'Daily Rituals', icon: Star },
+    { id: 'someday', label: 'Someday/Maybe', icon: Archive }
   ];
 
   const navTabs = tabs || defaultTabs;
   
   return (
     <header className="mb-6">
-      <h1 className="text-2xl font-semibold text-foreground flex items-center mb-6">
-        <Leaf className="mr-2 text-zen w-6 h-6" />
-        <span>{appName}</span>
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold text-foreground flex items-center">
+          <Leaf className="mr-2 text-zen w-6 h-6" />
+          <span>{appName}</span>
+        </h1>
+        <ThemeToggle />
+      </div>
       
       <nav className="flex border-b border-border">
         {navTabs.map(tab => {
           const Icon = tab.icon || (
-            tab.id === 'today' ? Sun :
-            tab.id === 'rituals' ? ListChecks :
+            tab.id === 'today' ? CheckCircle :
+            tab.id === 'rituals' ? Star :
             tab.id === 'upcoming' ? Calendar :
-            tab.id === 'someday' ? Calendar :
-            tab.id === 'notes' ? Moon : Sun
+            tab.id === 'someday' ? Archive :
+            tab.id === 'notes' ? Book : CheckCircle
           );
           
           return (

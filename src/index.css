@@ -4,6 +4,7 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light mode - default */
   :root {
     --background: 180 33% 97%;
     --foreground: 185 30% 25%;
@@ -36,16 +37,79 @@
     --radius: 0.75rem;
   }
 
+  /* Dark mode */
+  .dark {
+    --background: 196 33% 10%;
+    --foreground: 185 5% 90%;
+
+    --card: 195 40% 14%;
+    --card-foreground: 185 10% 95%;
+
+    --popover: 195 40% 14%;
+    --popover-foreground: 185 10% 95%;
+
+    --primary: 174 29% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 157 25% 40%;
+    --secondary-foreground: 180 10% 95%;
+
+    --muted: 195 20% 20%;
+    --muted-foreground: 174 13% 75%;
+
+    --accent: 82 20% 25%;
+    --accent-foreground: 174 36% 85%;
+
+    --destructive: 0 84.2% 40.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 157 10% 30%;
+    --input: 157 10% 30%;
+    --ring: 174 29% 40%;
+  }
+
+  /* Ocean theme - applied when data-color-scheme is ocean */
+  [data-color-scheme="ocean"] {
+    --primary: 210 70% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 199 70% 65%;
+    --accent: 190 90% 80%;
+  }
+
+  /* Forest theme */
+  [data-color-scheme="forest"] {
+    --primary: 120 30% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 140 30% 55%;
+    --accent: 90 40% 75%;
+  }
+
+  /* Lavender theme */
+  [data-color-scheme="lavender"] {
+    --primary: 270 50% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 285 40% 70%;
+    --accent: 260 50% 85%;
+  }
+
+  /* Sunset theme */
+  [data-color-scheme="sunset"] {
+    --primary: 30 90% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 20 80% 70%;
+    --accent: 40 90% 80%;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-normal;
+    @apply bg-background text-foreground font-normal transition-colors duration-300;
     font-feature-settings: "salt" on, "ss01" on, "cv08" on, "cv11" on;
   }
   
-  /* Custom utility classes for ZenDo */
+  /* Custom utility classes for Clarity */
   .task-input-container {
     @apply relative w-full transition-all duration-300;
   }
@@ -55,7 +119,7 @@
   }
   
   .zen-card {
-    @apply rounded-xl bg-white shadow-sm border border-border/50 overflow-hidden transition-all duration-300 hover:shadow-md;
+    @apply rounded-xl bg-card/70 backdrop-blur-sm shadow-sm border border-border/50 overflow-hidden transition-all duration-300 hover:shadow-md;
   }
   
   .zen-button {
@@ -99,4 +163,25 @@
 .float-in-delay-3 {
   animation: floatIn 0.4s 0.3s ease-out forwards;
   opacity: 0;
+}
+
+/* Plant Growth Animation for Gamification */
+@keyframes leafGrow {
+  0% {
+    transform: scale(0.8) translateY(3px);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.leaf-grow {
+  animation: leafGrow 1s ease-out forwards;
+}
+
+/* Theme transition effects */
+.theme-transition {
+  @apply transition-all duration-300 ease-in-out;
 }

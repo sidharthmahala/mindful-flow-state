@@ -1,12 +1,14 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Task, TaskMood, TaskPriority } from '@/types/task';
 import { useTaskContext } from '@/contexts/TaskContext';
-import { Check, X, Coffee, Star, AlertCircle, ChevronDown, ChevronUp, Trash2, Calendar, Tag, Briefcase } from 'lucide-react';
+import { Check, X, Coffee, Star, AlertCircle, ChevronDown, ChevronUp, Trash2, Calendar, Tag, Briefcase, Edit, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import LeafAnimation from './ui/leaf-animation';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 const moodIcons = {
   great: <Star className="w-4 h-4 text-amber-400" />,
@@ -52,6 +54,16 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   const [showMoodSelector, setShowMoodSelector] = useState(false);
   const [isBeingRemoved, setIsBeingRemoved] = useState(false);
   const [showLeafAnimation, setShowLeafAnimation] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(task.text);
+  const [editWhy, setEditWhy] = useState(task.why || '');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
 
   const handleComplete = () => {
     if (task.completed) {
@@ -73,6 +85,22 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
     setTimeout(() => {
       deleteTask(task.id);
     }, 300);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditText(task.text);
+    setEditWhy(task.why || '');
+  };
+
+  const handleSaveEdit = () => {
+    if (editText.trim()) {
+      updateTask(task.id, { 
+        text: editText.trim(),
+        why: editWhy.trim() || undefined
+      });
+      setIsEditing(false);
+    }
   };
 
   const getFormattedDate = (dateString?: string) => {
@@ -125,88 +153,134 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
           </button>
           
           <div className="flex-grow">
-            <div className="flex flex-wrap gap-1 mb-1">
-              {task.priority && (
-                <span className={cn(
-                  "text-xs px-2 py-0.5 rounded-full border",
-                  priorityColors[task.priority]
-                )}>
-                  {priorityLabels[task.priority]}
-                </span>
-              )}
-              
-              {task.project && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200 flex items-center">
-                  <Briefcase className="w-3 h-3 mr-1" />
-                  {task.project}
-                </span>
-              )}
-              
-              {task.label && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 border border-purple-200 flex items-center">
-                  <Tag className="w-3 h-3 mr-1" />
-                  {task.label}
-                </span>
-              )}
-              
-              {(task.date || task.dueDate) && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 flex items-center">
-                  <Calendar className="w-3 h-3 mr-1" />
-                  {getFormattedDate(task.dueDate) || getFormattedDate(task.date)}
-                </span>
-              )}
-              
-              {task.recurring && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-600 border border-teal-200">
-                  {task.recurring}
-                </span>
-              )}
-            </div>
-            
-            <p 
-              className={cn(
-                "text-md leading-tight font-medium mb-1",
-                task.completed ? "line-through text-muted-foreground" : ""
-              )}
-            >
-              {task.text}
-            </p>
-            
-            {task.completed && task.mood && (
-              <div className="text-xs flex items-center text-muted-foreground">
-                <span>Completed • Felt: {moodLabels[task.mood]}</span>
+            {isEditing ? (
+              <div className="space-y-2">
+                <Input
+                  ref={inputRef}
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="w-full p-1 rounded bg-white/50"
+                  placeholder="Task text"
+                />
+                <Textarea
+                  value={editWhy}
+                  onChange={(e) => setEditWhy(e.target.value)}
+                  className="w-full p-1 rounded bg-white/50 min-h-[60px] text-sm"
+                  placeholder="Why is this important? (optional)"
+                />
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={handleSaveEdit}
+                  >
+                    <Save className="w-3 h-3 mr-1" /> Save
+                  </Button>
+                </div>
               </div>
-            )}
-            
-            {task.why && (
-              <div className="mt-1">
-                <button 
-                  onClick={() => setExpanded(!expanded)}
-                  className="text-xs flex items-center text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {expanded ? (
-                    <>Hide why <ChevronUp className="w-3 h-3 ml-1" /></>
-                  ) : (
-                    <>Show why <ChevronDown className="w-3 h-3 ml-1" /></>
+            ) : (
+              <>
+                <p 
+                  className={cn(
+                    "text-md leading-tight font-medium mb-2",
+                    task.completed ? "line-through text-muted-foreground" : ""
                   )}
-                </button>
+                >
+                  {task.text}
+                </p>
                 
-                {expanded && (
-                  <div className="mt-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded animate-fade-in">
-                    {task.why}
+                {task.why && (
+                  <div className="mt-1 mb-2">
+                    <button 
+                      onClick={() => setExpanded(!expanded)}
+                      className="text-xs flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {expanded ? (
+                        <>Hide why <ChevronUp className="w-3 h-3 ml-1" /></>
+                      ) : (
+                        <>Show why <ChevronDown className="w-3 h-3 ml-1" /></>
+                      )}
+                    </button>
+                    
+                    {expanded && (
+                      <div className="mt-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded animate-fade-in">
+                        {task.why}
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+                
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {task.priority && (
+                    <span className={cn(
+                      "text-xs px-2 py-0.5 rounded-full border",
+                      priorityColors[task.priority]
+                    )}>
+                      {priorityLabels[task.priority]}
+                    </span>
+                  )}
+                  
+                  {task.project && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200 flex items-center">
+                      <Briefcase className="w-3 h-3 mr-1" />
+                      {task.project}
+                    </span>
+                  )}
+                  
+                  {task.label && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 border border-purple-200 flex items-center">
+                      <Tag className="w-3 h-3 mr-1" />
+                      {task.label}
+                    </span>
+                  )}
+                  
+                  {(task.date || task.dueDate) && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {getFormattedDate(task.dueDate) || getFormattedDate(task.date)}
+                    </span>
+                  )}
+                  
+                  {task.recurring && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-600 border border-teal-200">
+                      {task.recurring}
+                    </span>
+                  )}
+                </div>
+                
+                {task.completed && task.mood && (
+                  <div className="text-xs flex items-center text-muted-foreground mt-1">
+                    <span>Completed • Felt: {moodLabels[task.mood]}</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
           
-          {!showMoodSelector && (
-            <button
-              onClick={handleDelete}
-              className="text-muted-foreground hover:text-destructive transition-colors ml-2"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+          {!showMoodSelector && !isEditing && (
+            <div className="flex gap-1">
+              {!task.completed && (
+                <button
+                  onClick={handleEdit}
+                  className="text-muted-foreground hover:text-primary transition-colors ml-2"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={handleDelete}
+                className="text-muted-foreground hover:text-destructive transition-colors ml-2"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           )}
         </div>
         

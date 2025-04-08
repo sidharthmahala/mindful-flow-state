@@ -56,14 +56,14 @@ const UpcomingView = () => {
   
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm p-4 border border-border/50">
+      <div className="bg-card dark:bg-card/70 rounded-xl shadow-sm p-4 border border-border/50">
         <Calendar
           mode="single"
           selected={selectedDate}
           onSelect={setSelectedDate}
           className="mx-auto pointer-events-auto"
           components={{
-            Day: ({ date, displayMonth, ...props }) => (
+            Day: ({ date, ...props }) => (
               <Button
                 {...props}
                 variant="ghost"

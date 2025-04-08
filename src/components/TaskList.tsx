@@ -4,6 +4,8 @@ import TaskItem from './TaskItem';
 import { TaskCategory } from '@/types/task';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, ArrowUpCircle } from 'lucide-react';
+import PlantGrowth from './PlantGrowth';
+import { useState } from 'react';
 
 interface TaskListProps {
   category: TaskCategory;
@@ -11,6 +13,7 @@ interface TaskListProps {
 
 const TaskList: React.FC<TaskListProps> = ({ category }) => {
   const { getTasksByCategory, getConsistencyStreak, getOverdueTasks, moveTasksToToday } = useTaskContext();
+  const [showCompleted, setShowCompleted] = useState(false);
   
   const tasks = getTasksByCategory(category);
   const activeTasks = tasks.filter(task => !task.completed);
@@ -38,9 +41,9 @@ const TaskList: React.FC<TaskListProps> = ({ category }) => {
   return (
     <div>
       {consistencyStreak > 1 && category === 'today' && (
-        <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-100 text-green-700 flex items-center justify-between">
+        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800/30 text-green-700 dark:text-green-300 flex items-center justify-between">
           <div className="flex items-center">
-            <CalendarDays className="w-5 h-5 mr-2 text-green-500" />
+            <CalendarDays className="w-5 h-5 mr-2 text-green-500 dark:text-green-400" />
             <span>
               You've been consistent for <strong>{consistencyStreak} days</strong>. That's growth! 🌱
             </span>
@@ -49,7 +52,7 @@ const TaskList: React.FC<TaskListProps> = ({ category }) => {
       )}
       
       {overdueTasks.length > 0 && category === 'today' && (
-        <div className="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-100 text-amber-700">
+        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800/30 text-amber-700 dark:text-amber-300">
           <p className="mb-2 font-medium flex items-center">
             <ArrowUpCircle className="w-4 h-4 mr-2" />
             You have {overdueTasks.length} {overdueTasks.length === 1 ? 'task' : 'tasks'} from earlier days
@@ -57,12 +60,16 @@ const TaskList: React.FC<TaskListProps> = ({ category }) => {
           <Button 
             variant="outline" 
             size="sm"
-            className="border-amber-200 text-amber-700 hover:bg-amber-100"
+            className="border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-800/30"
             onClick={handleMoveOverdueTasks}
           >
             Move to Today
           </Button>
         </div>
+      )}
+      
+      {category === 'today' && (
+        <PlantGrowth />
       )}
       
       {activeTasks.length > 0 && (
@@ -75,12 +82,20 @@ const TaskList: React.FC<TaskListProps> = ({ category }) => {
 
       {completedTasks.length > 0 && (
         <div>
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">
-            Completed • {completedTasks.length}
-          </h3>
-          {completedTasks.map((task) => (
-            <TaskItem key={task.id} task={task} />
-          ))}
+          <button 
+            onClick={() => setShowCompleted(!showCompleted)}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center mb-3"
+          >
+            {showCompleted ? "Hide completed" : "Show completed"} • {completedTasks.length}
+          </button>
+          
+          {showCompleted && (
+            <div className="space-y-3 opacity-80">
+              {completedTasks.map((task) => (
+                <TaskItem key={task.id} task={task} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
