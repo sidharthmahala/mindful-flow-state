@@ -8,7 +8,7 @@ import MindDump from '@/components/MindDump';
 import AppHeader from '@/components/AppHeader';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { Leaf } from 'lucide-react';
+import { Leaf, Sun, ListChecks, Calendar, Moon } from 'lucide-react';
 import { TaskCategory } from '@/types/task';
 
 const Index = () => {
@@ -96,11 +96,11 @@ const Index = () => {
               setActiveTab={setActiveTab} 
               appName="Clarity"
               tabs={[
-                { id: 'today', label: 'Today' },
-                { id: 'rituals', label: 'Rituals' },
-                { id: 'upcoming', label: 'Upcoming' },
-                { id: 'someday', label: 'Someday' },
-                { id: 'notes', label: 'Notes' }
+                { id: 'today', label: 'Today', icon: Sun },
+                { id: 'rituals', label: 'Rituals', icon: ListChecks },
+                { id: 'upcoming', label: 'Upcoming', icon: Calendar },
+                { id: 'someday', label: 'Someday', icon: Calendar },
+                { id: 'notes', label: 'Notes', icon: Moon }
               ]}
             />
             {getTabContent()}

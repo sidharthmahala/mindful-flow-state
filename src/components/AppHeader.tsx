@@ -5,7 +5,7 @@ interface AppHeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   appName?: string;
-  tabs?: Array<{ id: string; label: string }>;
+  tabs?: Array<{ id: string; label: string; icon?: React.ElementType }>;
 }
 
 const AppHeader: React.FC<AppHeaderProps> = ({ activeTab, setActiveTab, appName = 'ZenDo', tabs }) => {

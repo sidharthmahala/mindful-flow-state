@@ -6,6 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import TaskItem from './TaskItem';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
+import { DayContent } from 'react-day-picker';
 
 const UpcomingView = () => {
   const { tasks } = useTaskContext();
@@ -60,13 +61,14 @@ const UpcomingView = () => {
           mode="single"
           selected={selectedDate}
           onSelect={setSelectedDate}
-          className="mx-auto"
+          className="mx-auto pointer-events-auto"
           components={{
-            Day: ({ date, ...props }) => (
+            Day: ({ date, displayMonth, ...props }) => (
               <Button
                 {...props}
+                variant="ghost"
                 className={cn(
-                  props.className,
+                  "h-9 w-9 p-0 font-normal",
                   datesWithTasks.includes(date.toISOString().split('T')[0]) &&
                   "bg-zen-light font-medium text-zen"
                 )}
