@@ -1,18 +1,22 @@
 
 import { useState } from 'react';
-import { Task, TaskMood } from '@/types/task';
+import { Task, TaskMood, TaskPriority } from '@/types/task';
 import { useTaskContext } from '@/contexts/TaskContext';
-import { Check, X, Coffee, Star, AlertCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Check, X, Coffee, Star, AlertCircle, ChevronDown, ChevronUp, Trash2, Calendar, Tag, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import LeafAnimation from './ui/leaf-animation';
 
 const moodIcons = {
   great: <Star className="w-4 h-4 text-amber-400" />,
   good: <Check className="w-4 h-4 text-green-500" />,
   neutral: <Coffee className="w-4 h-4 text-blue-400" />,
   difficult: <AlertCircle className="w-4 h-4 text-orange-400" />,
-  challenging: <X className="w-4 h-4 text-red-400" />
+  challenging: <X className="w-4 h-4 text-red-400" />,
+  energizing: <Star className="w-4 h-4 text-lime-400" />,
+  draining: <Coffee className="w-4 h-4 text-purple-400" />,
+  creative: <Star className="w-4 h-4 text-cyan-400" />
 };
 
 const moodLabels = {
@@ -20,7 +24,22 @@ const moodLabels = {
   good: "Good",
   neutral: "Neutral",
   difficult: "Difficult",
-  challenging: "Challenging"
+  challenging: "Challenging",
+  energizing: "Energizing",
+  draining: "Draining",
+  creative: "Creative"
+};
+
+const priorityColors = {
+  must: "bg-red-100 text-red-600 border-red-200",
+  should: "bg-amber-100 text-amber-600 border-amber-200",
+  nice: "bg-green-100 text-green-600 border-green-200"
+};
+
+const priorityLabels = {
+  must: "Must Do",
+  should: "Should Do",
+  nice: "Nice to Do"
 };
 
 interface TaskItemProps {
@@ -28,10 +47,11 @@ interface TaskItemProps {
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
-  const { completeTask, uncompleteTask, deleteTask } = useTaskContext();
+  const { completeTask, uncompleteTask, deleteTask, updateTask } = useTaskContext();
   const [expanded, setExpanded] = useState(false);
   const [showMoodSelector, setShowMoodSelector] = useState(false);
   const [isBeingRemoved, setIsBeingRemoved] = useState(false);
+  const [showLeafAnimation, setShowLeafAnimation] = useState(false);
 
   const handleComplete = () => {
     if (task.completed) {
@@ -42,6 +62,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   };
 
   const handleMoodSelect = (mood: TaskMood) => {
+    setShowLeafAnimation(true);
     completeTask(task.id, mood);
     setShowMoodSelector(false);
   };
@@ -54,6 +75,25 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
     }, 300);
   };
 
+  const getFormattedDate = (dateString?: string) => {
+    if (!dateString) return null;
+    
+    const date = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return "Tomorrow";
+    } else {
+      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -61,9 +101,15 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
       transition={{ duration: 0.3 }}
       className={cn(
         "zen-card mb-3 overflow-hidden",
-        task.completed ? "border-zen-secondary bg-zen-light/30" : ""
+        task.completed ? "border-zen-secondary bg-zen-light/30" : "",
+        task.isOverdue && !task.completed ? "border-red-300 bg-red-50/30" : ""
       )}
     >
+      <LeafAnimation 
+        startAnimation={showLeafAnimation} 
+        onComplete={() => setShowLeafAnimation(false)} 
+      />
+      
       <div className="p-4">
         <div className="flex items-start">
           <button
@@ -79,6 +125,44 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
           </button>
           
           <div className="flex-grow">
+            <div className="flex flex-wrap gap-1 mb-1">
+              {task.priority && (
+                <span className={cn(
+                  "text-xs px-2 py-0.5 rounded-full border",
+                  priorityColors[task.priority]
+                )}>
+                  {priorityLabels[task.priority]}
+                </span>
+              )}
+              
+              {task.project && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200 flex items-center">
+                  <Briefcase className="w-3 h-3 mr-1" />
+                  {task.project}
+                </span>
+              )}
+              
+              {task.label && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 border border-purple-200 flex items-center">
+                  <Tag className="w-3 h-3 mr-1" />
+                  {task.label}
+                </span>
+              )}
+              
+              {(task.date || task.dueDate) && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 flex items-center">
+                  <Calendar className="w-3 h-3 mr-1" />
+                  {getFormattedDate(task.dueDate) || getFormattedDate(task.date)}
+                </span>
+              )}
+              
+              {task.recurring && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-600 border border-teal-200">
+                  {task.recurring}
+                </span>
+              )}
+            </div>
+            
             <p 
               className={cn(
                 "text-md leading-tight font-medium mb-1",
@@ -169,6 +253,30 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
                 onClick={() => handleMoodSelect('challenging')}
               >
                 <X className="w-3 h-3 mr-1" /> Challenging
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-lime-400 border-lime-200 hover:bg-lime-50"
+                onClick={() => handleMoodSelect('energizing')}
+              >
+                <Star className="w-3 h-3 mr-1" /> Energizing
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-purple-400 border-purple-200 hover:bg-purple-50"
+                onClick={() => handleMoodSelect('draining')}
+              >
+                <Coffee className="w-3 h-3 mr-1" /> Draining
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-cyan-400 border-cyan-200 hover:bg-cyan-50"
+                onClick={() => handleMoodSelect('creative')}
+              >
+                <Star className="w-3 h-3 mr-1" /> Creative
               </Button>
             </div>
             <div className="mt-2 text-right">
