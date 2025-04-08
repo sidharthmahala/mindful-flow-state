@@ -6,7 +6,7 @@
 @layer base {
   /* Light mode - default */
   :root {
-    --background: 240 30% 98%;
+    --background: 260 30% 96%;
     --foreground: 220 25% 25%;
 
     --card: 0 0% 100%;
@@ -70,42 +70,47 @@
 
   /* Lavender theme - soft purple pastel */
   [data-color-scheme="lavender"] {
-    --primary: 270 70% 80%;
+    --primary: 270 80% 80%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 280 60% 85%;
-    --accent: 265 70% 90%;
+    --secondary: 280 70% 85%;
+    --accent: 265 80% 90%;
+    --background: 268 30% 96%;
   }
 
   /* Mint theme - soft green pastel */
   [data-color-scheme="mint"] {
-    --primary: 150 60% 80%;
+    --primary: 150 70% 80%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 160 50% 85%;
-    --accent: 140 60% 90%;
+    --secondary: 160 60% 85%;
+    --accent: 140 70% 90%;
+    --background: 150 30% 96%;
   }
 
   /* Peach theme - soft orange pastel */
   [data-color-scheme="peach"] {
-    --primary: 20 90% 80%;
+    --primary: 20 95% 80%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 80% 85%;
-    --accent: 15 90% 90%;
+    --secondary: 30 85% 85%;
+    --accent: 15 95% 90%;
+    --background: 20 30% 96%;
   }
 
   /* Sky theme - soft blue pastel */
   [data-color-scheme="sky"] {
-    --primary: 200 70% 80%;
+    --primary: 200 80% 80%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 60% 85%;
-    --accent: 195 70% 90%;
+    --secondary: 210 70% 85%;
+    --accent: 195 80% 90%;
+    --background: 200 30% 96%;
   }
 
   /* Lemon theme - soft yellow pastel */
   [data-color-scheme="lemon"] {
-    --primary: 50 90% 80%;
+    --primary: 50 95% 80%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 45 80% 85%;
-    --accent: 55 90% 90%;
+    --secondary: 45 85% 85%;
+    --accent: 55 95% 90%;
+    --background: 50 30% 96%;
   }
 
   * {

@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from 'react';
 import { MoonStar, SunMoon, Palette } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -8,7 +7,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const ThemeToggle = () => {
@@ -64,11 +62,11 @@ export const ThemeToggle = () => {
 
 function getColorClass(scheme: string): string {
   switch (scheme) {
-    case 'lavender': return 'bg-purple-200';
-    case 'mint': return 'bg-green-200';
-    case 'peach': return 'bg-orange-200';
-    case 'sky': return 'bg-blue-200';
-    case 'lemon': return 'bg-yellow-200';
-    default: return 'bg-purple-200';
+    case 'lavender': return 'bg-purple-200 dark:bg-purple-300';
+    case 'mint': return 'bg-green-200 dark:bg-green-300';
+    case 'peach': return 'bg-orange-200 dark:bg-orange-300';
+    case 'sky': return 'bg-blue-200 dark:bg-blue-300';
+    case 'lemon': return 'bg-yellow-200 dark:bg-yellow-300';
+    default: return 'bg-purple-200 dark:bg-purple-300';
   }
 }

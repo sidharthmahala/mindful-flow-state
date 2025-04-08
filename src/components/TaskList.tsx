@@ -4,7 +4,6 @@ import TaskItem from './TaskItem';
 import { TaskCategory } from '@/types/task';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, ArrowUpCircle } from 'lucide-react';
-import PlantGrowth from './PlantGrowth';
 import { useState } from 'react';
 
 interface TaskListProps {
@@ -45,7 +44,7 @@ const TaskList: React.FC<TaskListProps> = ({ category }) => {
           <div className="flex items-center">
             <CalendarDays className="w-5 h-5 mr-2 text-green-500 dark:text-green-400" />
             <span>
-              You've been consistent for <strong>{consistencyStreak} days</strong>. That's growth! 🌱
+              You've been consistent for <strong>{consistencyStreak} days</strong>!
             </span>
           </div>
         </div>
@@ -66,10 +65,6 @@ const TaskList: React.FC<TaskListProps> = ({ category }) => {
             Move to Today
           </Button>
         </div>
-      )}
-      
-      {category === 'today' && (
-        <PlantGrowth />
       )}
       
       {activeTasks.length > 0 && (

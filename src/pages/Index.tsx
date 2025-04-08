@@ -16,7 +16,7 @@ const AppContent = () => {
   const [activeTab, setActiveTab] = useState<string>('today');
   const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
-  const { backgroundImage } = useTheme();
+  const { backgroundImage, colorScheme } = useTheme();
 
   // Animation control to ensure components only animate after initial mount
   useEffect(() => {
