@@ -6,7 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import TaskItem from './TaskItem';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
-import { DayContent } from 'react-day-picker';
+import { Clock, Coffee, CheckCircle } from 'lucide-react';
 
 const UpcomingView = () => {
   const { tasks } = useTaskContext();
@@ -31,7 +31,7 @@ const UpcomingView = () => {
     if (selectedDate) {
       const dateString = selectedDate.toISOString().split('T')[0];
       const relevantTasks = tasks.filter(task => 
-        (task.date === dateString || task.dueDate === dateString) && !task.completed
+        (task.date === dateString || task.dueDate === dateString)
       );
       setTasksForSelectedDate(relevantTasks);
     } else {
@@ -53,6 +53,12 @@ const UpcomingView = () => {
       </div>
     );
   };
+
+  // Get starting tasks (not completed) for the selected date
+  const startingTasks = tasksForSelectedDate.filter(task => !task.completed);
+  
+  // Get ending tasks (completed) for the selected date
+  const endingTasks = tasksForSelectedDate.filter(task => task.completed);
   
   return (
     <div className="space-y-6">
@@ -70,7 +76,7 @@ const UpcomingView = () => {
                 className={cn(
                   "h-9 w-9 p-0 font-normal",
                   datesWithTasks.includes(date.toISOString().split('T')[0]) &&
-                  "bg-zen-light font-medium text-zen"
+                  "bg-accent font-medium text-accent-foreground"
                 )}
               >
                 {renderCalendarDay(date)}
@@ -80,8 +86,8 @@ const UpcomingView = () => {
         />
       </div>
       
-      <div>
-        {selectedDate && (
+      {selectedDate && (
+        <div>
           <h2 className="text-lg font-medium mb-4">
             Tasks for {selectedDate.toLocaleDateString('en-US', { 
               weekday: 'long', 
@@ -89,21 +95,43 @@ const UpcomingView = () => {
               day: 'numeric' 
             })}
           </h2>
-        )}
-        
-        {tasksForSelectedDate.length > 0 ? (
-          <div className="space-y-3">
-            {tasksForSelectedDate.map(task => (
-              <TaskItem key={task.id} task={task} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-6 text-muted-foreground">
-            <p>No tasks scheduled for this day</p>
-            <p className="text-sm mt-1">Use "Add Task" to schedule something</p>
-          </div>
-        )}
-      </div>
+          
+          {startingTasks.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center mb-3">
+                <Clock className="w-4 h-4 mr-2 text-primary" />
+                <h3 className="text-md font-medium">Starting Tasks</h3>
+              </div>
+              <div className="space-y-3">
+                {startingTasks.map(task => (
+                  <TaskItem key={task.id} task={task} />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {endingTasks.length > 0 && (
+            <div>
+              <div className="flex items-center mb-3">
+                <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                <h3 className="text-md font-medium">Completed Tasks</h3>
+              </div>
+              <div className="space-y-3">
+                {endingTasks.map(task => (
+                  <TaskItem key={task.id} task={task} />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {tasksForSelectedDate.length === 0 && (
+            <div className="text-center py-6 text-muted-foreground">
+              <p>No tasks scheduled for this day</p>
+              <p className="text-sm mt-1">Use "Add Task" to schedule something</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

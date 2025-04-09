@@ -42,14 +42,21 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     return localStorage.getItem('clarity-bg-image');
   });
 
-  // Update localStorage when theme changes
+  // Update localStorage and DOM when theme changes
   useEffect(() => {
     localStorage.setItem('clarity-theme', theme);
-    document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(theme);
+    
+    // Update the document class for dark mode
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    }
   }, [theme]);
 
-  // Update localStorage when color scheme changes
+  // Update localStorage and data attribute when color scheme changes
   useEffect(() => {
     localStorage.setItem('clarity-color-scheme', colorScheme);
     document.documentElement.setAttribute('data-color-scheme', colorScheme);

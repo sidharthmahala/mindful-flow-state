@@ -7,11 +7,35 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
+// Apply the current theme and color scheme as classes on document.documentElement
+const ThemeInitializer = () => {
+  useEffect(() => {
+    // Set initial theme from localStorage or system preference
+    const savedTheme = localStorage.getItem('clarity-theme') || 
+                      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    
+    document.documentElement.classList.add(savedTheme);
+    
+    // Set initial color scheme
+    const savedColorScheme = localStorage.getItem('clarity-color-scheme') || 'lavender';
+    document.documentElement.setAttribute('data-color-scheme', savedColorScheme);
+    
+    return () => {
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.removeAttribute('data-color-scheme');
+    };
+  }, []);
+  
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeInitializer />
     <ThemeProvider>
       <TooltipProvider>
         <Toaster />

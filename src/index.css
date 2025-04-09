@@ -69,7 +69,7 @@
   }
 
   /* Lavender theme - soft purple pastel */
-  [data-color-scheme="lavender"] {
+  .light[data-color-scheme="lavender"] {
     --primary: 270 80% 80%;
     --primary-foreground: 0 0% 100%;
     --secondary: 280 70% 85%;
@@ -77,8 +77,15 @@
     --background: 268 30% 96%;
   }
 
+  .dark[data-color-scheme="lavender"] {
+    --primary: 270 60% 70%;
+    --secondary: 280 50% 60%;
+    --accent: 265 45% 50%;
+    --background: 268 30% 14%;
+  }
+
   /* Mint theme - soft green pastel */
-  [data-color-scheme="mint"] {
+  .light[data-color-scheme="mint"] {
     --primary: 150 70% 80%;
     --primary-foreground: 0 0% 100%;
     --secondary: 160 60% 85%;
@@ -86,8 +93,15 @@
     --background: 150 30% 96%;
   }
 
+  .dark[data-color-scheme="mint"] {
+    --primary: 150 60% 60%;
+    --secondary: 160 50% 55%;
+    --accent: 140 45% 45%;
+    --background: 150 30% 14%;
+  }
+
   /* Peach theme - soft orange pastel */
-  [data-color-scheme="peach"] {
+  .light[data-color-scheme="peach"] {
     --primary: 20 95% 80%;
     --primary-foreground: 0 0% 100%;
     --secondary: 30 85% 85%;
@@ -95,8 +109,15 @@
     --background: 20 30% 96%;
   }
 
+  .dark[data-color-scheme="peach"] {
+    --primary: 20 70% 65%;
+    --secondary: 30 60% 60%;
+    --accent: 15 50% 50%;
+    --background: 20 30% 14%;
+  }
+
   /* Sky theme - soft blue pastel */
-  [data-color-scheme="sky"] {
+  .light[data-color-scheme="sky"] {
     --primary: 200 80% 80%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 70% 85%;
@@ -104,13 +125,27 @@
     --background: 200 30% 96%;
   }
 
+  .dark[data-color-scheme="sky"] {
+    --primary: 200 60% 60%;
+    --secondary: 210 50% 55%;
+    --accent: 195 45% 50%;
+    --background: 200 30% 14%;
+  }
+
   /* Lemon theme - soft yellow pastel */
-  [data-color-scheme="lemon"] {
+  .light[data-color-scheme="lemon"] {
     --primary: 50 95% 80%;
     --primary-foreground: 0 0% 100%;
     --secondary: 45 85% 85%;
     --accent: 55 95% 90%;
     --background: 50 30% 96%;
+  }
+
+  .dark[data-color-scheme="lemon"] {
+    --primary: 50 70% 65%;
+    --secondary: 45 60% 60%;
+    --accent: 55 50% 55%;
+    --background: 50 25% 14%;
   }
 
   * {
