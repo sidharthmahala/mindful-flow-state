@@ -5,9 +5,7 @@ import {
   FileText, 
   Archive, 
   Star, 
-  Plus, 
-  ChevronLeft,
-  ChevronRight
+  Plus
 } from 'lucide-react';
 import { 
   Sidebar, 
@@ -28,7 +26,7 @@ interface AppSidebarProps {
 }
 
 const AppSidebar = ({ activeTab, setActiveTab }: AppSidebarProps) => {
-  const { state, toggleSidebar } = useSidebar();
+  const { state } = useSidebar();
   const [username] = useState('User');
   
   const menuItems = [
@@ -43,24 +41,13 @@ const AppSidebar = ({ activeTab, setActiveTab }: AppSidebarProps) => {
     <Sidebar className="border-r border-r-border/50 mt-14">
       <SidebarRail />
       <SidebarContent className="pt-4 flex flex-col">
-        {/* User Profile and Sidebar Toggle */}
-        <div className="flex items-center justify-between px-4 pb-4 mb-2 border-b border-border/50">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="https://github.com/shadcn.png" alt={username} />
-              <AvatarFallback className="text-xs bg-primary/10 text-primary">{username.charAt(0)}</AvatarFallback>
-            </Avatar>
-            {state === "expanded" && <span className="text-sm font-medium">{username}</span>}
-          </div>
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-7 w-7"
-            onClick={toggleSidebar}
-          >
-            {state === "expanded" ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
+        {/* User Profile */}
+        <div className="flex items-center px-4 pb-4 mb-2 border-b border-border/50">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src="https://github.com/shadcn.png" alt={username} />
+            <AvatarFallback className="text-xs bg-primary/10 text-primary">{username.charAt(0)}</AvatarFallback>
+          </Avatar>
+          {state === "expanded" && <span className="ml-2 text-sm font-medium">{username}</span>}
         </div>
         
         {/* Quick Add Task Button */}
