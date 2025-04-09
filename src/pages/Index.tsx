@@ -4,19 +4,20 @@ import { TaskProvider } from '@/contexts/TaskContext';
 import TaskInput from '@/components/TaskInput';
 import TaskList from '@/components/TaskList';
 import UpcomingView from '@/components/UpcomingView';
-import MindDump from '@/components/MindDump';
-import AppHeader from '@/components/AppHeader';
+import EnhancedMindDump from '@/components/EnhancedMindDump';
+import NavBar from '@/components/NavBar';
+import AppSidebar from '@/components/AppSidebar';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Star, Calendar, Book, Archive } from 'lucide-react';
 import { TaskCategory } from '@/types/task';
 import { useTheme } from '@/contexts/ThemeContext';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 const AppContent = () => {
   const [activeTab, setActiveTab] = useState<string>('today');
   const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
-  const { backgroundImage, colorScheme } = useTheme();
+  const { backgroundImage } = useTheme();
 
   // Animation control to ensure components only animate after initial mount
   useEffect(() => {
@@ -63,7 +64,7 @@ const AppContent = () => {
           transition={{ duration: 0.3 }}
           className="mt-6"
         >
-          <MindDump />
+          <EnhancedMindDump />
         </motion.div>
       );
     }
@@ -85,44 +86,42 @@ const AppContent = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       {!mounted ? (
         <div className="fixed inset-0 flex items-center justify-center">
           <div className="w-10 h-10 animate-pulse-light bg-primary/80 rounded-full"></div>
         </div>
       ) : (
-        <div className="container max-w-md px-4 py-8">
-          <AppHeader 
-            activeTab={activeTab} 
-            setActiveTab={setActiveTab} 
-            appName="Clarity"
-            tabs={[
-              { id: 'today', label: 'Today', icon: CheckCircle },
-              { id: 'rituals', label: 'Rituals', icon: Star },
-              { id: 'upcoming', label: 'Upcoming', icon: Calendar },
-              { id: 'someday', label: 'Someday', icon: Archive },
-              { id: 'notes', label: 'Notes', icon: Book }
-            ]}
-          />
-          {getTabContent()}
-
-          <footer className="mt-auto pt-10 pb-4 text-center text-xs text-muted-foreground">
-            <p>
-              "Small steps, taken consistently, create lasting change."
-            </p>
-          </footer>
-        </div>
-      )}
-      
-      {backgroundImage && (
-        <div 
-          className="fixed inset-0 -z-10 opacity-25 dark:opacity-15" 
-          style={{ 
-            backgroundImage: `url(${backgroundImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }} 
-        />
+        <SidebarProvider defaultOpen={true}>
+          <div className="flex w-full min-h-screen">
+            <AppSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+            
+            <div className="flex-1 flex flex-col">
+              <NavBar />
+              
+              <div className="flex-1 container max-w-3xl px-4 py-6">
+                {getTabContent()}
+                
+                <footer className="mt-auto pt-10 pb-4 text-center text-xs text-muted-foreground">
+                  <p>
+                    "Small steps, taken consistently, create lasting change."
+                  </p>
+                </footer>
+              </div>
+            </div>
+          </div>
+          
+          {backgroundImage && (
+            <div 
+              className="fixed inset-0 -z-10 opacity-25 dark:opacity-15" 
+              style={{ 
+                backgroundImage: `url(${backgroundImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }} 
+            />
+          )}
+        </SidebarProvider>
       )}
     </div>
   );

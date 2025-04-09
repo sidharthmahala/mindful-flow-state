@@ -39,7 +39,7 @@ export const ThemeToggle = () => {
         </DropdownMenuItem>
         <div className="px-2 py-2">
           <div className="text-xs text-muted-foreground mb-2 flex items-center">
-            <Palette className="w-3 h-3 mr-1" />
+            <Palette className="w-3 h-3 mr-1 text-[#64d8a3]" />
             Color Scheme
           </div>
           <div className="grid grid-cols-5 gap-1">
@@ -47,7 +47,7 @@ export const ThemeToggle = () => {
               <button
                 key={color.value}
                 className={`w-6 h-6 rounded-full ${getColorClass(color.value)} ${
-                  colorScheme === color.value ? 'ring-2 ring-offset-2 ring-ring' : ''
+                  colorScheme === color.value ? 'ring-2 ring-offset-2 ring-[#64d8a3]' : ''
                 }`}
                 onClick={() => setColorScheme(color.value)}
                 title={color.name}

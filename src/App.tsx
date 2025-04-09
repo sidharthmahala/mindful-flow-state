@@ -21,7 +21,7 @@ const ThemeInitializer = () => {
     document.documentElement.classList.add(savedTheme);
     
     // Set initial color scheme
-    const savedColorScheme = localStorage.getItem('clarity-color-scheme') || 'lavender';
+    const savedColorScheme = localStorage.getItem('clarity-color-scheme') || 'mint';
     document.documentElement.setAttribute('data-color-scheme', savedColorScheme);
     
     return () => {
