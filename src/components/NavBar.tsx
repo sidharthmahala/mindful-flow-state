@@ -4,7 +4,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 const NavBar = () => {
   return (
-    <header className="w-full border-b border-border/50 bg-background/80 backdrop-blur-sm">
+    <header className="w-full border-b border-border/50 bg-background/80 backdrop-blur-sm fixed top-0 z-50">
       <div className="container flex h-14 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-semibold text-foreground flex items-center">

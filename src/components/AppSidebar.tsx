@@ -7,8 +7,7 @@ import {
   Star, 
   Plus, 
   ChevronLeft,
-  ChevronRight,
-  Search
+  ChevronRight
 } from 'lucide-react';
 import { 
   Sidebar, 
@@ -41,7 +40,7 @@ const AppSidebar = ({ activeTab, setActiveTab }: AppSidebarProps) => {
   ];
 
   return (
-    <Sidebar className="border-r border-r-border/50">
+    <Sidebar className="border-r border-r-border/50 mt-14">
       <SidebarRail />
       <SidebarContent className="pt-4 flex flex-col">
         {/* User Profile and Sidebar Toggle */}
@@ -80,18 +79,6 @@ const AppSidebar = ({ activeTab, setActiveTab }: AppSidebarProps) => {
             <Plus className="h-4 w-4" />
             Add Task
           </Button>
-        )}
-        
-        {/* Search (Optional) */}
-        {state === "expanded" && (
-          <div className="relative mb-4 mx-3">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              className="w-full h-9 pl-8 pr-3 rounded-md bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
         )}
 
         {/* Navigation Menu */}

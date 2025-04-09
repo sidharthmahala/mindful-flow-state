@@ -93,12 +93,11 @@ const AppContent = () => {
         </div>
       ) : (
         <SidebarProvider defaultOpen={true}>
-          <div className="flex w-full min-h-screen">
+          <NavBar />
+          <div className="flex w-full min-h-screen pt-14">
             <AppSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
             
             <div className="flex-1 flex flex-col">
-              <NavBar />
-              
               <div className="flex-1 container max-w-3xl px-4 py-6">
                 {/* Tab Title */}
                 <h2 className="text-2xl font-semibold text-foreground mb-4">
