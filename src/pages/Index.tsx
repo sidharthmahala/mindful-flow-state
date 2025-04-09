@@ -100,6 +100,11 @@ const AppContent = () => {
               <NavBar />
               
               <div className="flex-1 container max-w-3xl px-4 py-6">
+                {/* Tab Title */}
+                <h2 className="text-2xl font-semibold text-foreground mb-4">
+                  {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                </h2>
+                
                 {getTabContent()}
                 
                 <footer className="mt-auto pt-10 pb-4 text-center text-xs text-muted-foreground">

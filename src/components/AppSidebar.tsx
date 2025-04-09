@@ -1,13 +1,27 @@
 
-import { CalendarDays, CheckCircle, FileText, Archive, Star } from 'lucide-react';
+import { 
+  CalendarDays, 
+  CheckCircle, 
+  FileText, 
+  Archive, 
+  Star, 
+  Plus, 
+  ChevronLeft,
+  ChevronRight,
+  Search
+} from 'lucide-react';
 import { 
   Sidebar, 
   SidebarContent, 
   SidebarMenu, 
   SidebarMenuItem, 
   SidebarMenuButton,
-  SidebarRail
+  SidebarRail,
+  useSidebar
 } from '@/components/ui/sidebar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 interface AppSidebarProps {
   activeTab: string;
@@ -15,6 +29,9 @@ interface AppSidebarProps {
 }
 
 const AppSidebar = ({ activeTab, setActiveTab }: AppSidebarProps) => {
+  const { state, toggleSidebar } = useSidebar();
+  const [username] = useState('User');
+  
   const menuItems = [
     { id: 'today', label: 'Today', icon: CheckCircle },
     { id: 'rituals', label: 'Rituals', icon: Star },
@@ -26,7 +43,58 @@ const AppSidebar = ({ activeTab, setActiveTab }: AppSidebarProps) => {
   return (
     <Sidebar className="border-r border-r-border/50">
       <SidebarRail />
-      <SidebarContent className="pt-4">
+      <SidebarContent className="pt-4 flex flex-col">
+        {/* User Profile and Sidebar Toggle */}
+        <div className="flex items-center justify-between px-4 pb-4 mb-2 border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="https://github.com/shadcn.png" alt={username} />
+              <AvatarFallback className="text-xs bg-primary/10 text-primary">{username.charAt(0)}</AvatarFallback>
+            </Avatar>
+            {state === "expanded" && <span className="text-sm font-medium">{username}</span>}
+          </div>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7"
+            onClick={toggleSidebar}
+          >
+            {state === "expanded" ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </Button>
+        </div>
+        
+        {/* Quick Add Task Button */}
+        {state === "expanded" && (
+          <Button 
+            className="mb-4 mx-3 flex items-center gap-1 bg-[#64d8a3] hover:bg-[#50c090] text-white"
+            onClick={() => {
+              setActiveTab('today');
+              // Focus on task input (this is just UI prep, actual focus would need a ref)
+              const taskInput = document.querySelector('input[placeholder="Add a task..."]');
+              if (taskInput) {
+                (taskInput as HTMLInputElement).focus();
+              }
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Add Task
+          </Button>
+        )}
+        
+        {/* Search (Optional) */}
+        {state === "expanded" && (
+          <div className="relative mb-4 mx-3">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="w-full h-9 pl-8 pr-3 rounded-md bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+        )}
+
+        {/* Navigation Menu */}
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.id}>
