@@ -8,7 +8,8 @@ type AuthContextType = {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any; isNewUser?: boolean }>;
+  signInWithGoogle: () => Promise<void>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 };
@@ -44,44 +45,131 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
+    try {
+      const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        // Check if the error is because user doesn't exist
+        if (error.message.includes('Invalid login credentials') || 
+            error.message.includes('Email not confirmed') ||
+            error.message.toLowerCase().includes('user not found')) {
+          
+          // Check if email exists in the system
+          const { error: checkError, data: userExists } = await supabase.auth.admin.getUserByEmail(email);
+          
+          if (checkError || !userExists) {
+            toast({
+              title: "User not found",
+              description: "No account found with this email. Please sign up.",
+              variant: "destructive",
+            });
+            return { error, isNewUser: true };
+          }
+        }
+        
+        toast({
+          title: "Login Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+      
+      return { error };
+    } catch (error: any) {
       toast({
         title: "Login Failed",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) {
+        toast({
+          title: "Google Login Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Google Login Failed",
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
     }
-    return { error };
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) {
+        toast({
+          title: "Sign up Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sign up Successful",
+          description: "Please check your email for verification.",
+        });
+      }
+      
+      return { error };
+    } catch (error: any) {
       toast({
         title: "Sign up Failed",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Sign up Successful",
-        description: "Please check your email for verification.",
-      });
+      return { error };
     }
-    return { error };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Logout Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user, 
+      loading, 
+      signIn, 
+      signInWithGoogle,
+      signUp, 
+      signOut 
+    }}>
       {children}
     </AuthContext.Provider>
   );

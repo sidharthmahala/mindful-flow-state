@@ -19,7 +19,7 @@ const ThemeInitializer = () => {
   useEffect(() => {
     // Set initial theme from localStorage or system preference
     const savedTheme = localStorage.getItem('clarity-theme') || 
-                      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     
     document.documentElement.classList.add(savedTheme);
     
@@ -53,11 +53,25 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Auth callback handler
+const AuthCallback = () => {
+  const { loading } = useAuth();
+  
+  if (loading) {
+    return <div className="h-screen flex items-center justify-center">
+      <div className="w-10 h-10 animate-pulse-light bg-primary/80 rounded-full"></div>
+    </div>;
+  }
+  
+  return <Navigate to="/" replace />;
+};
+
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
