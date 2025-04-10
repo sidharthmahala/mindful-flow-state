@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -29,7 +28,7 @@ const signupSchema = z.object({
     .refine(val => !isNaN(parseInt(val)) && parseInt(val) > 0, { 
       message: "Age must be a positive number" 
     })
-    .transform(val => parseInt(val)), // This transforms the string to a number
+    .transform(val => parseInt(val)), // Transform string to number
   gender: z.string().min(1, { message: "Please select a gender" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
