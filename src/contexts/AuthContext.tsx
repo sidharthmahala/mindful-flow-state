@@ -5,8 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
-type ProfilesRow = Database['public']['Tables']['profiles']['Row'];
-
 type UserProfile = {
   fullName: string;
   age: number | null;
@@ -52,9 +50,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (data) {
         setUserProfile({
-          fullName: data.full_name,
-          age: data.age,
-          gender: data.gender
+          fullName: data.full_name as string,
+          age: data.age as number | null,
+          gender: data.gender as string | null
         });
       }
     } catch (error) {
@@ -220,7 +218,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               age: userData.age,
               gender: userData.gender,
               updated_at: new Date()
-            });
+            } as any);
           
           if (profileError) {
             console.error('Error saving profile data:', profileError);
