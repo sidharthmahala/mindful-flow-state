@@ -74,7 +74,7 @@ const Auth = () => {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       fullName: '',
-      age: '',
+      age: 0,
       gender: '',
       email: defaultEmail,
       password: '',
