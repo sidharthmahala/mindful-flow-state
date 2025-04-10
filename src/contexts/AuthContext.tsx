@@ -54,10 +54,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             error.message.includes('Email not confirmed') ||
             error.message.toLowerCase().includes('user not found')) {
           
-          // Check if email exists in the system
-          const { error: checkError, data: userExists } = await supabase.auth.admin.getUserByEmail(email);
+          // We'll check if the user exists by trying to sign them up
+          // and checking the response - this is a more reliable method
+          const { error: signUpError } = await supabase.auth.signUp({
+            email,
+            password: 'temporary-check-password', // We're just checking if the email exists
+          });
           
-          if (checkError || !userExists) {
+          // If we get an error that the user already exists, they exist but password was wrong
+          // If we don't get that specific error, the user likely doesn't exist
+          const isNewUser = !signUpError || 
+            !signUpError.message.includes('already registered');
+          
+          if (isNewUser) {
             toast({
               title: "User not found",
               description: "No account found with this email. Please sign up.",
