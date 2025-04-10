@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -61,7 +60,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    // First set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         setSession(currentSession);
@@ -69,7 +67,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
         
         if (currentSession?.user) {
-          // Use setTimeout to avoid deadlock with Supabase auth
           setTimeout(() => {
             refreshProfile();
           }, 0);
@@ -79,7 +76,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
@@ -101,20 +97,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
-        // Check if the error is because user doesn't exist
         if (error.message.includes('Invalid login credentials') || 
             error.message.includes('Email not confirmed') ||
             error.message.toLowerCase().includes('user not found')) {
           
-          // We'll check if the user exists by trying to sign them up
-          // and checking the response - this is a more reliable method
           const { error: signUpError } = await supabase.auth.signUp({
             email,
-            password: 'temporary-check-password', // We're just checking if the email exists
+            password: 'temporary-check-password',
           });
           
-          // If we get an error that the user already exists, they exist but password was wrong
-          // If we don't get that specific error, the user likely doesn't exist
           const isNewUser = !signUpError || 
             !signUpError.message.includes('already registered');
           
@@ -173,13 +164,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, userData: UserProfile) => {
     try {
-      // First, check if email already exists
       const { error: checkError } = await supabase.auth.signUp({
         email,
         password: 'temp-password-for-check',
       });
       
-      // If the error indicates email is already registered, return early
       if (checkError && checkError.message.includes('already registered')) {
         toast({
           title: "Sign up Failed",
@@ -189,7 +178,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: checkError };
       }
       
-      // Proceed with actual signup
       const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -208,7 +196,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
       } else {
-        // If signup successful, store additional profile data
         if (data?.user) {
           const { error: profileError } = await supabase
             .from('profiles')

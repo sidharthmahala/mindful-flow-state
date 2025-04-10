@@ -29,7 +29,7 @@ const signupSchema = z.object({
     .refine(val => !isNaN(parseInt(val)) && parseInt(val) > 0, { 
       message: "Age must be a positive number" 
     })
-    .transform(val => parseInt(val)),
+    .transform(val => parseInt(val)), // This transforms the string to a number
   gender: z.string().min(1, { message: "Please select a gender" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
@@ -128,7 +128,7 @@ const Auth = () => {
     try {
       const { error } = await signUp(values.email, values.password, {
         fullName: values.fullName,
-        age: values.age,
+        age: values.age, // This is now a number after transformation
         gender: values.gender
       });
       
