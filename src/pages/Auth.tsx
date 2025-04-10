@@ -45,11 +45,9 @@ const Auth = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   
-  // Extract email from state if redirected from login
   const locationState = location.state as { email?: string } | null;
   const defaultEmail = locationState?.email || '';
 
-  // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
       navigate('/');
@@ -82,14 +80,12 @@ const Auth = () => {
     },
   });
 
-  // If we get redirected with an email, update the form
   useEffect(() => {
     if (defaultEmail) {
       loginForm.setValue('email', defaultEmail);
       forgotPasswordForm.setValue('email', defaultEmail);
       signupForm.setValue('email', defaultEmail);
       
-      // If redirected from login, switch to signup
       if (location.state?.fromLogin) {
         setMode('signup');
       }
@@ -104,7 +100,6 @@ const Auth = () => {
       if (!error) {
         navigate('/');
       } else if (isNewUser) {
-        // Redirect to signup with email pre-filled
         navigate('/auth', { state: { email: values.email, fromLogin: true } });
       }
     } finally {
@@ -116,7 +111,6 @@ const Auth = () => {
     setIsLoading(true);
     try {
       await resetPassword(values.email);
-      // We don't navigate away after requesting a password reset
     } finally {
       setIsLoading(false);
     }
@@ -127,13 +121,11 @@ const Auth = () => {
     try {
       const { error } = await signUp(values.email, values.password, {
         fullName: values.fullName,
-        age: values.age, // This is now a number after transformation
+        age: values.age,
         gender: values.gender
       });
       
       if (!error) {
-        // Stay on the same page but show a success message
-        // The toast is already handled in the AuthContext
       }
     } finally {
       setIsLoading(false);
