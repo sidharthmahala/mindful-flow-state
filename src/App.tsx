@@ -20,6 +20,8 @@ const ThemeInitializer = () => {
     // Set initial theme to light by default (changed from using system preference)
     const savedTheme = localStorage.getItem('clarity-theme') || 'light';
     
+    // Make sure it's light by default
+    document.documentElement.classList.remove('dark');
     document.documentElement.classList.add(savedTheme);
     
     // Set initial color scheme

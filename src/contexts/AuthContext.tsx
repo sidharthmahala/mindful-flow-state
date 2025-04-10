@@ -3,6 +3,9 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+type ProfilesRow = Database['public']['Tables']['profiles']['Row'];
 
 type UserProfile = {
   fullName: string;
