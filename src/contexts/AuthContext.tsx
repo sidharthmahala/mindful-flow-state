@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -202,7 +203,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .upsert({ 
               id: data.user.id,
               full_name: userData.fullName,
-              age: userData.age,
+              age: userData.age, // Now properly handling as number | null
               gender: userData.gender,
               updated_at: new Date()
             } as any);
