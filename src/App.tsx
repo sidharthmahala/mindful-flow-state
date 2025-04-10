@@ -17,9 +17,8 @@ const queryClient = new QueryClient();
 // Apply the current theme and color scheme as classes on document.documentElement
 const ThemeInitializer = () => {
   useEffect(() => {
-    // Set initial theme from localStorage or system preference
-    const savedTheme = localStorage.getItem('clarity-theme') || 
-                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    // Set initial theme to light by default (changed from using system preference)
+    const savedTheme = localStorage.getItem('clarity-theme') || 'light';
     
     document.documentElement.classList.add(savedTheme);
     
@@ -72,6 +71,7 @@ const AppRoutes = () => {
       <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/auth/reset-password" element={<AuthCallback />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

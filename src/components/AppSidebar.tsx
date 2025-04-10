@@ -5,7 +5,9 @@ import {
   FileText, 
   Archive, 
   Star, 
-  Plus
+  Plus,
+  LogOut,
+  Settings
 } from 'lucide-react';
 import { 
   Sidebar, 
@@ -18,7 +20,14 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
 interface AppSidebarProps {
   activeTab: string;
@@ -27,7 +36,9 @@ interface AppSidebarProps {
 
 const AppSidebar = ({ activeTab, setActiveTab }: AppSidebarProps) => {
   const { state } = useSidebar();
-  const [username] = useState('User');
+  const { user, userProfile, signOut } = useAuth();
+  
+  const displayName = userProfile?.fullName || user?.email?.split('@')[0] || 'User';
   
   const menuItems = [
     { id: 'today', label: 'Today', icon: CheckCircle },
@@ -42,12 +53,41 @@ const AppSidebar = ({ activeTab, setActiveTab }: AppSidebarProps) => {
       <SidebarRail />
       <SidebarContent className="pt-4 flex flex-col">
         {/* User Profile */}
-        <div className="flex items-center px-4 pb-4 mb-2 border-b border-border/50">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="https://github.com/shadcn.png" alt={username} />
-            <AvatarFallback className="text-xs bg-primary/10 text-primary">{username.charAt(0)}</AvatarFallback>
-          </Avatar>
-          {state === "expanded" && <span className="ml-2 text-sm font-medium">{username}</span>}
+        <div className="px-4 pb-4 mb-4 border-b border-border/50">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="w-full flex items-center justify-start gap-2 p-2 hover:bg-accent rounded-lg">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={displayName} />
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                    {displayName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {state === "expanded" && (
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-medium line-clamp-1">{displayName}</span>
+                    {user?.email && (
+                      <span className="text-xs text-muted-foreground line-clamp-1">{user.email}</span>
+                    )}
+                  </div>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem className="flex items-center">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => signOut()}
+                className="cursor-pointer flex items-center text-destructive"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         
         {/* Quick Add Task Button */}

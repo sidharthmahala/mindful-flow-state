@@ -4,14 +4,23 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+type UserProfile = {
+  fullName: string;
+  age: number | null;
+  gender: string | null;
+};
+
 type AuthContextType = {
   session: Session | null;
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any; isNewUser?: boolean }>;
   signInWithGoogle: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, userData: UserProfile) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,8 +28,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const refreshProfile = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+      
+      if (data) {
+        setUserProfile({
+          fullName: data.full_name,
+          age: data.age,
+          gender: data.gender
+        });
+      }
+    } catch (error) {
+      console.error('Error in profile fetch:', error);
+    }
+  };
 
   useEffect(() => {
     // First set up the auth state listener
@@ -29,6 +66,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setLoading(false);
+        
+        if (currentSession?.user) {
+          // Use setTimeout to avoid deadlock with Supabase auth
+          setTimeout(() => {
+            refreshProfile();
+          }, 0);
+        } else {
+          setUserProfile(null);
+        }
       }
     );
 
@@ -36,6 +82,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
+      
+      if (currentSession?.user) {
+        refreshProfile();
+      }
+      
       setLoading(false);
     });
 
@@ -119,13 +170,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, userData: UserProfile) => {
     try {
-      const { error } = await supabase.auth.signUp({ 
+      // First, check if email already exists
+      const { error: checkError } = await supabase.auth.signUp({
+        email,
+        password: 'temp-password-for-check',
+      });
+      
+      // If the error indicates email is already registered, return early
+      if (checkError && checkError.message.includes('already registered')) {
+        toast({
+          title: "Sign up Failed",
+          description: "This email is already registered. Please log in instead.",
+          variant: "destructive",
+        });
+        return { error: checkError };
+      }
+      
+      // Proceed with actual signup
+      const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            full_name: userData.fullName
+          }
         }
       });
       
@@ -136,6 +207,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
       } else {
+        // If signup successful, store additional profile data
+        if (data?.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({ 
+              id: data.user.id,
+              full_name: userData.fullName,
+              age: userData.age,
+              gender: userData.gender,
+              updated_at: new Date()
+            });
+          
+          if (profileError) {
+            console.error('Error saving profile data:', profileError);
+          }
+        }
+        
         toast({
           title: "Sign up Successful",
           description: "Please check your email for verification.",
@@ -146,6 +234,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error: any) {
       toast({
         title: "Sign up Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      
+      if (error) {
+        toast({
+          title: "Password Reset Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Password Reset Email Sent",
+          description: "Check your email for a password reset link.",
+        });
+      }
+      
+      return { error };
+    } catch (error: any) {
+      toast({
+        title: "Password Reset Failed",
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
@@ -173,11 +291,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider value={{ 
       session, 
       user, 
+      userProfile,
       loading, 
       signIn, 
       signInWithGoogle,
       signUp, 
-      signOut 
+      signOut,
+      resetPassword,
+      refreshProfile
     }}>
       {children}
     </AuthContext.Provider>
