@@ -143,7 +143,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            prompt: 'select_account'
+          }
         }
       });
       
@@ -203,7 +206,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .upsert({ 
               id: data.user.id,
               full_name: userData.fullName,
-              age: userData.age, // Now properly handling as number | null
+              age: userData.age,
               gender: userData.gender,
               updated_at: new Date()
             } as any);
