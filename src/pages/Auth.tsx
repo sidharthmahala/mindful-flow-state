@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from '@/components/ui/card';
 import {
   Form,
@@ -17,26 +16,87 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 import { z } from 'zod';
-import { useForm } from 'react-hook-form';
+import { useForm, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { Leaf, Mail, Lock } from 'lucide-react';
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
 });
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
+  email: z.string().email({ message: 'Please enter a valid email address' }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+
+const EmailField = ({ control, name }: { control: Control<LoginFormValues | ForgotPasswordFormValues>; name: "email" }) => (
+  <FormField
+    control={control}
+    name={name}
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Email</FormLabel>
+        <FormControl>
+          <div className="relative">
+            <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+            <Input className="pl-10" placeholder="email@example.com" {...field} />
+          </div>
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+const PasswordField = ({ control, name }: { control: Control<LoginFormValues>; name: "password" }) => (
+  <FormField
+    control={control}
+    name={name}
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Password</FormLabel>
+        <FormControl>
+          <div className="relative">
+            <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+            <Input className="pl-10" type="password" placeholder="••••••••" {...field} />
+          </div>
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+const FormWrapper = ({
+  form,
+  onSubmit,
+  children,
+  isLoading,
+  submitLabel,
+}: {
+  form: ReturnType<typeof useForm<LoginFormValues | ForgotPasswordFormValues>>;
+  onSubmit: (values: LoginFormValues | ForgotPasswordFormValues) => void;
+  children: React.ReactNode;
+  isLoading: boolean;
+  submitLabel: string;
+}) => (
+  <Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      {children}
+      <Button type="submit" className="w-full bg-[#64d8a3] hover:bg-[#50c090]" disabled={isLoading}>
+        {isLoading ? 'Processing...' : submitLabel}
+      </Button>
+    </form>
+  </Form>
+);
 
 const Auth = () => {
   const [mode, setMode] = useState<'login' | 'forgot-password'>('login');
@@ -45,35 +105,23 @@ const Auth = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
 
-  const locationState = location.state as { 
-    email?: string; 
-  } | null;
-  
+  const locationState = location.state as { email?: string } | null;
   const defaultEmail = locationState?.email || '';
 
   useEffect(() => {
     if (user) {
-      if (userProfile?.isComplete) {
-        navigate('/');
-      } else {
-        navigate('/complete-profile');
-      }
+      navigate(userProfile?.isComplete ? '/' : '/complete-profile');
     }
   }, [user, userProfile, navigate]);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: defaultEmail,
-      password: '',
-    },
+    defaultValues: { email: defaultEmail, password: '' },
   });
 
   const forgotPasswordForm = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: {
-      email: defaultEmail,
-    },
+    defaultValues: { email: defaultEmail },
   });
 
   useEffect(() => {
@@ -83,21 +131,18 @@ const Auth = () => {
     }
   }, [defaultEmail, loginForm, forgotPasswordForm]);
 
-  const handleLogin = async (values: LoginFormValues) => {
+  const handleLogin = useCallback(async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
       const { error, isNewUser } = await signIn(values.email, values.password);
-      if (!error) {
-        // Auth check will handle redirection
-      } else if (isNewUser) {
-        navigate('/signup', { state: { email: values.email } });
-      }
+      if (!error) return;
+      if (isNewUser) navigate('/signup', { state: { email: values.email } });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [signIn, navigate]);
 
-  const handleForgotPassword = async (values: ForgotPasswordFormValues) => {
+  const handleForgotPassword = useCallback(async (values: ForgotPasswordFormValues) => {
     setIsLoading(true);
     try {
       await resetPassword(values.email);
@@ -105,92 +150,56 @@ const Auth = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [resetPassword]);
 
   const handleGoogleSignIn = async () => {
     await signInWithGoogle();
   };
 
-  const getCurrentForm = () => {
+  const formContent = useMemo(() => {
     if (mode === 'forgot-password') {
       return (
-        <Form {...forgotPasswordForm}>
-          <form onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)} className="space-y-4">
-            <FormField
-              control={forgotPasswordForm.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                      <Input className="pl-10" placeholder="email@example.com" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full bg-[#64d8a3] hover:bg-[#50c090]" disabled={isLoading}>
-              {isLoading ? 'Processing...' : 'Reset Password'}
-            </Button>
-          </form>
-        </Form>
-      );
-    } else {
-      return (
-        <Form {...loginForm}>
-          <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-            <FormField
-              control={loginForm.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                      <Input className="pl-10" placeholder="email@example.com" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={loginForm.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                      <Input className="pl-10" type="password" placeholder="••••••••" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="text-right">
-              <Button
-                variant="link"
-                className="p-0 h-auto text-[#64d8a3]"
-                type="button"
-                onClick={() => setMode('forgot-password')}
-              >
-                Forgot Password?
-              </Button>
-            </div>
-            <Button type="submit" className="w-full bg-[#64d8a3] hover:bg-[#50c090]" disabled={isLoading}>
-              {isLoading ? 'Processing...' : 'Sign In'}
-            </Button>
-          </form>
-        </Form>
+        <FormWrapper
+          form={forgotPasswordForm}
+          onSubmit={handleForgotPassword}
+          isLoading={isLoading}
+          submitLabel="Reset Password"
+        >
+          <EmailField control={forgotPasswordForm.control} name="email" />
+        </FormWrapper>
       );
     }
+    return (
+      <FormWrapper
+        form={loginForm}
+        onSubmit={handleLogin}
+        isLoading={isLoading}
+        submitLabel="Sign In"
+      >
+        <EmailField control={loginForm.control} name="email" />
+        <PasswordField control={loginForm.control} name="password" />
+        <div className="text-right">
+          <Button
+            variant="link"
+            className="p-0 h-auto text-[#64d8a3]"
+            type="button"
+            onClick={() => setMode('forgot-password')}
+          >
+            Forgot Password?
+          </Button>
+        </div>
+      </FormWrapper>
+    );
+  }, [mode, loginForm, forgotPasswordForm, isLoading, handleForgotPassword, handleLogin]);
+
+  const titles = {
+    login: 'Welcome to Clarity',
+    'forgot-password': 'Reset your password',
+  };
+
+  const descriptions = {
+    login: 'Enter your credentials to access your account',
+    'forgot-password': 'Enter your email to receive a password reset link',
   };
 
   return (
@@ -200,21 +209,20 @@ const Auth = () => {
           <div className="flex justify-center mb-4">
             <Leaf className="h-10 w-10 text-[#64d8a3]" />
           </div>
-          <CardTitle className="text-2xl font-bold">
-            {mode === 'login' && 'Welcome back to Clarity'}
-            {mode === 'forgot-password' && 'Reset your password'}
-          </CardTitle>
-          <CardDescription>
-            {mode === 'login' && 'Enter your credentials to access your account'}
-            {mode === 'forgot-password' && 'Enter your email to receive a password reset link'}
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold">{titles[mode]}</CardTitle>
+          <CardDescription>{descriptions[mode]}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">{getCurrentForm()}</CardContent>
+        <CardContent className="space-y-4">{formContent}</CardContent>
         <CardFooter className="flex flex-col gap-2">
           {mode !== 'forgot-password' && (
             <>
               <Separator />
-              <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading} className="w-full">
+              <Button
+                variant="outline"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+                className="w-full"
+              >
                 Continue with Google
               </Button>
               <p className="text-sm text-muted-foreground text-center">

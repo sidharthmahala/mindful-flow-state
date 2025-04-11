@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from '@/components/ui/card';
 import {
   Form,
@@ -17,14 +16,14 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -38,11 +37,11 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const profileSchema = z.object({
-  fullName: z.string().min(2, { message: "Full name must be at least 2 characters" }),
+  fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
   dateOfBirth: z.date({
-    required_error: "Please select a date of birth",
+    required_error: 'Please select a date of birth',
   }),
-  role: z.string().min(1, { message: "Please select a role" }),
+  role: z.string().min(1, { message: 'Please select a role' }),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -58,7 +57,7 @@ const CompleteProfile = () => {
       navigate('/auth');
       return;
     }
-    
+
     if (userProfile?.isComplete) {
       navigate('/');
     }
@@ -73,62 +72,72 @@ const CompleteProfile = () => {
     },
   });
 
-  const handleProfileComplete = async (values: ProfileFormValues) => {
-    if (!user) return;
-    
-    setIsLoading(true);
-    try {
-      // Calculate age from dateOfBirth
-      const today = new Date();
-      const birthDate = new Date(values.dateOfBirth);
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      
-      // Update profile in Supabase
-      const { data: profileData, error: profileError } = await supabase
-        .from('user_profiles')
-        .upsert({
-          user_id: user.id,
-          full_name: values.fullName,
-          age,
-          role: values.role,
-          date_of_birth: values.dateOfBirth.toISOString(),
-          is_complete: true,
-          updated_at: new Date().toISOString()
-        })
-        .select();
-      
-      if (profileError) {
+  const handleProfileComplete = useCallback(
+    async (values: ProfileFormValues) => {
+      if (!user) return;
+
+      setIsLoading(true);
+      try {
+        // Calculate age from dateOfBirth
+        const today = new Date();
+        const birthDate = new Date(values.dateOfBirth);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+
+        // Update profile in Supabase
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .upsert({
+            user_id: user.id,
+            full_name: values.fullName,
+            age,
+            role: values.role,
+            date_of_birth: values.dateOfBirth.toISOString(),
+            is_complete: true,
+            updated_at: new Date().toISOString(),
+          });
+
+        if (profileError) {
+          toast({
+            title: 'Error',
+            description: profileError.message,
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Refresh the profile data
+        await refreshProfile();
+
         toast({
-          title: "Error",
-          description: profileError.message,
-          variant: "destructive",
+          title: 'Profile Updated',
+          description: 'Your profile has been completed successfully.',
         });
-        return;
+
+        navigate('/');
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast({
+            title: 'Error',
+            description: error.message || 'An error occurred while updating your profile.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: 'An unknown error occurred.',
+            variant: 'destructive',
+          });
+        }
+      } finally {
+        setIsLoading(false);
       }
-      
-      // Refresh the profile data
-      await refreshProfile();
-      
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been completed successfully.",
-      });
-      
-      navigate('/');
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An error occurred while updating your profile.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [user, navigate, refreshProfile, toast]
+  );
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -137,9 +146,7 @@ const CompleteProfile = () => {
           <div className="flex justify-center mb-4">
             <Leaf className="h-10 w-10 text-[#64d8a3]" />
           </div>
-          <CardTitle className="text-2xl font-bold">
-            Complete Your Profile
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">Complete Your Profile</CardTitle>
           <CardDescription>
             Please provide the remaining information to complete your profile
           </CardDescription>
@@ -149,11 +156,13 @@ const CompleteProfile = () => {
             <div className="bg-muted p-3 rounded-md flex items-center space-x-3">
               <Mail className="h-5 w-5 text-muted-foreground" />
               <div className="text-sm text-muted-foreground">
-                <p>Signed in as: <span className="font-medium">{user.email}</span></p>
+                <p>
+                  Signed in as: <span className="font-medium">{user.email}</span>
+                </p>
               </div>
             </div>
           )}
-          
+
           <Form {...profileForm}>
             <form onSubmit={profileForm.handleSubmit(handleProfileComplete)} className="space-y-4">
               <FormField
@@ -172,7 +181,7 @@ const CompleteProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={profileForm.control}
                 name="dateOfBirth"
@@ -184,14 +193,12 @@ const CompleteProfile = () => {
                         <FormControl>
                           <Button
                             variant="outline"
-                            className={`w-full pl-10 text-left font-normal relative ${!field.value && "text-muted-foreground"}`}
+                            className={`w-full pl-10 text-left font-normal relative ${
+                              !field.value && 'text-muted-foreground'
+                            }`}
                           >
                             <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
+                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -201,7 +208,7 @@ const CompleteProfile = () => {
                           selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
+                            date > new Date() || date < new Date('1900-01-01')
                           }
                           initialFocus
                           className="p-3 pointer-events-auto"
@@ -212,7 +219,7 @@ const CompleteProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={profileForm.control}
                 name="role"
@@ -237,8 +244,12 @@ const CompleteProfile = () => {
                   </FormItem>
                 )}
               />
-              
-              <Button type="submit" className="w-full bg-[#64d8a3] hover:bg-[#50c090]" disabled={isLoading}>
+
+              <Button
+                type="submit"
+                className="w-full bg-[#64d8a3] hover:bg-[#50c090]"
+                disabled={isLoading}
+              >
                 {isLoading ? 'Processing...' : 'Complete Profile'}
               </Button>
             </form>
