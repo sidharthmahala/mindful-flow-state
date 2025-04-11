@@ -319,7 +319,7 @@ const Auth = () => {
             <Leaf className="h-10 w-10 text-[#64d8a3]" />
           </div>
           <CardTitle className="text-2xl font-bold">
-            {mode === 'login' && 'Welcome back to Clarity'}
+            {mode === 'login' && 'Welcome to Clarity'}
             {mode === 'signup' && 'Create your Clarity account'}
             {mode === 'forgot-password' && 'Reset your password'}
           </CardTitle>
