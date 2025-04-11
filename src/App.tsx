@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Signup from "./pages/Signup";
+import CompleteProfile from "./pages/CompleteProfile";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -37,9 +39,9 @@ const ThemeInitializer = () => {
   return null;
 };
 
-// Protected route component
+// Protected route component with profile check
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   
   if (loading) {
     return <div className="h-screen flex items-center justify-center">
@@ -51,17 +53,29 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/auth" replace />;
   }
   
+  if (!userProfile?.isComplete) {
+    return <Navigate to="/complete-profile" replace />;
+  }
+  
   return <>{children}</>;
 };
 
 // Auth callback handler
 const AuthCallback = () => {
-  const { loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   
   if (loading) {
     return <div className="h-screen flex items-center justify-center">
       <div className="w-10 h-10 animate-pulse-light bg-primary/80 rounded-full"></div>
     </div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  if (!userProfile?.isComplete) {
+    return <Navigate to="/complete-profile" replace />;
   }
   
   return <Navigate to="/" replace />;
@@ -72,6 +86,8 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/complete-profile" element={<CompleteProfile />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/reset-password" element={<AuthCallback />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

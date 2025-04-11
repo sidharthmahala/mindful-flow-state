@@ -9,6 +9,9 @@ type UserProfile = {
   fullName: string;
   age: number | null;
   gender: string | null;
+  role: string | null;
+  dateOfBirth: string | null;
+  isComplete: boolean;
 };
 
 type AuthContextType = {
@@ -18,7 +21,7 @@ type AuthContextType = {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any; isNewUser?: boolean }>;
   signInWithGoogle: () => Promise<void>;
-  signUp: (email: string, password: string, userData: UserProfile) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, userData: { fullName: string; age: number; role?: string; dateOfBirth?: string }) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   refreshProfile: () => Promise<void>;
@@ -37,23 +40,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user?.id) return;
     
     try {
-      const { data, error } = await supabase
+      // Try to fetch from user_profiles first (new table)
+      const { data: profileData, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (profileData) {
+        setUserProfile({
+          fullName: profileData.full_name as string,
+          age: profileData.age as number | null,
+          gender: profileData.role as string | null, // For backward compatibility
+          role: profileData.role as string | null,
+          dateOfBirth: profileData.date_of_birth as string | null,
+          isComplete: profileData.is_complete as boolean
+        });
+        return;
+      }
+      
+      // Fall back to old 'profiles' table if user_profiles doesn't have data
+      const { data: legacyData, error: legacyError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
       
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-      
-      if (data) {
+      if (legacyData) {
         setUserProfile({
-          fullName: data.full_name as string,
-          age: data.age as number | null,
-          gender: data.gender as string | null
+          fullName: legacyData.full_name as string,
+          age: legacyData.age as number | null,
+          gender: legacyData.gender as string | null,
+          role: legacyData.gender as string | null, // For backward compatibility
+          dateOfBirth: null,
+          isComplete: false
         });
+      } else {
+        // No profile found in either table
+        setUserProfile(null);
       }
     } catch (error) {
       console.error('Error in profile fetch:', error);
@@ -166,7 +190,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, userData: UserProfile) => {
+  const signUp = async (email: string, password: string, userData: { fullName: string; age: number; role?: string; dateOfBirth?: string }) => {
     try {
       const { error: checkError } = await supabase.auth.signUp({
         email,
@@ -201,15 +225,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
       } else {
         if (data?.user) {
+          // Insert into user_profiles table
           const { error: profileError } = await supabase
-            .from('profiles')
+            .from('user_profiles')
             .upsert({ 
-              id: data.user.id,
+              user_id: data.user.id,
               full_name: userData.fullName,
               age: userData.age,
-              gender: userData.gender,
-              updated_at: new Date()
-            } as any);
+              role: userData.role || null,
+              date_of_birth: userData.dateOfBirth || null,
+              is_complete: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
           
           if (profileError) {
             console.error('Error saving profile data:', profileError);

@@ -1,14 +1,22 @@
 
-import { Leaf, PanelLeft } from 'lucide-react';
+import { Leaf, PanelLeft, User } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
 import { useSidebar } from './ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const NavBar = () => {
   const { toggleSidebar } = useSidebar();
-  const { user } = useAuth();
+  const { user, userProfile, signOut } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -31,14 +39,42 @@ const NavBar = () => {
         </div>
         <div className="flex items-center space-x-2">
           <ThemeToggle />
-          {!user && (
-            <Button 
-              size="sm" 
-              onClick={() => navigate('/auth')}
-              className="bg-[#64d8a3] hover:bg-[#50c090]"
-            >
-              Login
-            </Button>
+          
+          {user && userProfile ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{userProfile.fullName || user.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/complete-profile')}>
+                  Edit Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => signOut()}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => navigate('/signup')}
+              >
+                Sign Up
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={() => navigate('/auth')}
+                className="bg-[#64d8a3] hover:bg-[#50c090]"
+              >
+                Login
+              </Button>
+            </>
           )}
         </div>
       </div>
