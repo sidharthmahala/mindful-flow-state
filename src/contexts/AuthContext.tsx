@@ -51,10 +51,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserProfile({
           fullName: profileData.full_name as string,
           age: profileData.age as number | null,
-          gender: profileData.role as string | null, // For backward compatibility
+          gender: null, // For backward compatibility
           role: profileData.role as string | null,
           dateOfBirth: profileData.date_of_birth as string | null,
-          isComplete: profileData.is_complete as boolean
+          isComplete: profileData.is_complete as boolean || false
         });
         return;
       }
