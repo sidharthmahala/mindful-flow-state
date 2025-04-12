@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,18 +19,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
-import { Leaf, Mail, User, Lock } from 'lucide-react';
+import { Leaf, Mail, User, Lock, Briefcase } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -38,7 +32,7 @@ const signupSchema = z.object({
   dateOfBirth: z.date({
     required_error: 'Please select a date of birth',
   }),
-  role: z.string().min(1, { message: 'Please select a role' }),
+  profession: z.string().min(1, { message: 'Please enter your profession' }),
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
 });
@@ -60,7 +54,7 @@ const Signup = () => {
     defaultValues: {
       fullName: '',
       dateOfBirth: undefined,
-      role: '',
+      profession: '',
       email: defaultEmail,
       password: '',
     },
@@ -82,7 +76,7 @@ const Signup = () => {
         const { error } = await signUp(values.email, values.password, {
           fullName: values.fullName,
           age,
-          role: values.role,
+          role: values.profession, // Pass profession as role
           dateOfBirth: values.dateOfBirth.toISOString(),
         });
 
@@ -152,27 +146,19 @@ const Signup = () => {
                 )}
               />
 
-              {/* Role Field */}
+              {/* Profession Field (replacing Role Field) */}
               <FormField
                 control={signupForm.control}
-                name="role"
+                name="profession"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="pl-10 relative">
-                          <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="creator">Creator</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Profession</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                        <Input className="pl-10" placeholder="Enter your profession" {...field} />
+                      </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
