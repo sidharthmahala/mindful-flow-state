@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,14 +18,10 @@ const queryClient = new QueryClient();
 // Apply the current theme and color scheme as classes on document.documentElement
 const ThemeInitializer = () => {
   useEffect(() => {
-    // Set initial theme to light by default (changed from using system preference)
     const savedTheme = localStorage.getItem('clarity-theme') || 'light';
-    
-    // Make sure it's light by default
     document.documentElement.classList.remove('dark');
     document.documentElement.classList.add(savedTheme);
     
-    // Set initial color scheme
     const savedColorScheme = localStorage.getItem('clarity-color-scheme') || 'mint';
     document.documentElement.setAttribute('data-color-scheme', savedColorScheme);
     
@@ -50,13 +45,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user) {
+    console.log("No user, redirecting to /auth");
     return <Navigate to="/auth" replace />;
   }
   
-  if (!userProfile?.isComplete) {
+  if (userProfile === null || userProfile?.isComplete !== true) {
+    console.log("Profile incomplete, redirecting to /complete-profile", userProfile);
     return <Navigate to="/complete-profile" replace />;
   }
   
+  console.log("Profile complete, rendering protected content");
   return <>{children}</>;
 };
 
@@ -90,7 +88,6 @@ const AppRoutes = () => {
       <Route path="/complete-profile" element={<CompleteProfile />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/reset-password" element={<AuthCallback />} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

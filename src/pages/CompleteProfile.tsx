@@ -57,9 +57,12 @@ const CompleteProfile = () => {
       navigate('/auth');
       return;
     }
-
+    
     if (userProfile?.isComplete) {
+      console.log('Profile is complete, navigating to home');
       navigate('/');
+    } else {
+      console.log('Profile needs completion', userProfile);
     }
   }, [user, userProfile, navigate]);
 
@@ -78,7 +81,6 @@ const CompleteProfile = () => {
 
       setIsLoading(true);
       try {
-        // Calculate age from dateOfBirth
         const today = new Date();
         const birthDate = new Date(values.dateOfBirth);
         let age = today.getFullYear() - birthDate.getFullYear();
@@ -87,7 +89,6 @@ const CompleteProfile = () => {
           age--;
         }
 
-        // Update profile in Supabase
         const { error: profileError } = await supabase
           .from('user_profiles')
           .upsert({
@@ -101,6 +102,7 @@ const CompleteProfile = () => {
           });
 
         if (profileError) {
+          console.error('Profile update error:', profileError);
           toast({
             title: 'Error',
             description: profileError.message,
@@ -109,7 +111,6 @@ const CompleteProfile = () => {
           return;
         }
 
-        // Refresh the profile data
         await refreshProfile();
 
         toast({
@@ -117,7 +118,9 @@ const CompleteProfile = () => {
           description: 'Your profile has been completed successfully.',
         });
 
-        navigate('/');
+        setTimeout(() => {
+          navigate('/');
+        }, 500);
       } catch (error: unknown) {
         if (error instanceof Error) {
           toast({

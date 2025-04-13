@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +39,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user?.id) return;
     
     try {
+      console.log("Refreshing profile for user:", user.id);
+      
       // Try to fetch from user_profiles first (new table)
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
@@ -48,6 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
       
       if (profileData) {
+        console.log("Found profile in user_profiles:", profileData);
         setUserProfile({
           fullName: profileData.full_name as string,
           age: profileData.age as number | null,
@@ -57,6 +59,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           isComplete: profileData.is_complete as boolean || false
         });
         return;
+      } else {
+        console.log("No profile found in user_profiles, error:", profileError);
       }
       
       // Fall back to old 'profiles' table if user_profiles doesn't have data
@@ -67,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
       
       if (legacyData) {
+        console.log("Found profile in legacy profiles:", legacyData);
         setUserProfile({
           fullName: legacyData.full_name as string,
           age: legacyData.age as number | null,
@@ -76,6 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           isComplete: false
         });
       } else {
+        console.log("No profile found in legacy table either:", legacyError);
         // No profile found in either table
         setUserProfile(null);
       }
@@ -87,11 +93,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
+        console.log("Auth state changed:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setLoading(false);
         
         if (currentSession?.user) {
+          console.log("User authenticated, refreshing profile");
           setTimeout(() => {
             refreshProfile();
           }, 0);
@@ -102,6 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log("Initial session check:", currentSession?.user?.id ? "User logged in" : "No user");
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
