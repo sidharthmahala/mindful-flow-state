@@ -119,20 +119,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // First, try to sign in
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
+        // If login fails, check if it's because the user doesn't exist
         if (error.message.includes('Invalid login credentials') || 
             error.message.includes('Email not confirmed') ||
             error.message.toLowerCase().includes('user not found')) {
           
-          const { error: signUpError } = await supabase.auth.signUp({
+          // Try a sign-up attempt to see if user exists
+          const { error: signUpCheckError } = await supabase.auth.signUp({
             email,
-            password: 'temporary-check-password',
+            password,
           });
           
-          const isNewUser = !signUpError || 
-            !signUpError.message.includes('already registered');
+          // If this error mentions already registered, user exists but password is wrong
+          const isNewUser = !signUpCheckError || 
+            !signUpCheckError.message.includes('already registered');
           
           if (isNewUser) {
             toast({
@@ -146,7 +150,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         toast({
           title: "Login Failed",
-          description: error.message,
+          description: error.message || "Invalid credentials. Please try again.",
           variant: "destructive",
         });
       }
