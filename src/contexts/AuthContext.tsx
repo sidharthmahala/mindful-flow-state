@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,7 +35,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Enhanced profile refresh function
   const refreshProfile = async () => {
     if (!user?.id) {
       console.log("No user ID available for profile refresh");
@@ -55,8 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (profileData) {
         console.log("Found profile in user_profiles:", profileData);
         
-        // Explicitly convert is_complete to a boolean
-        const isComplete = profileData.is_complete === true || profileData.is_complete === 'true';
+        const isComplete = profileData.is_complete === true || profileData.is_complete === true;
         
         setUserProfile({
           fullName: profileData.full_name as string,
@@ -98,18 +95,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Initial auth setup
   useEffect(() => {
     console.log("Setting up auth state listener");
     
-    // First set up the auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log("Auth state changed:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Use setTimeout to prevent deadlocks
         if (currentSession?.user) {
           console.log("User authenticated, refreshing profile");
           setTimeout(() => {
@@ -123,7 +117,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Then check for an existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession?.user?.id ? "User logged in" : "No user");
       setSession(currentSession);
