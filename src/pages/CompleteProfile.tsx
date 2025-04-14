@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const profileSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
@@ -49,11 +51,15 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 const CompleteProfile = () => {
   const { user, userProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    console.log("CompleteProfile mounted. User:", user?.id);
+    console.log("User profile:", userProfile);
+    
     if (!user) {
+      console.log("No user, redirecting to auth");
       navigate('/auth');
       return;
     }
@@ -69,17 +75,40 @@ const CompleteProfile = () => {
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: userProfile?.fullName || '',
+      fullName: userProfile?.fullName || user?.user_metadata?.full_name || '',
       dateOfBirth: userProfile?.dateOfBirth ? new Date(userProfile.dateOfBirth) : undefined,
       role: userProfile?.role || '',
     },
   });
 
+  // Update form values when userProfile changes
+  useEffect(() => {
+    if (userProfile) {
+      profileForm.setValue('fullName', userProfile.fullName || '');
+      if (userProfile.dateOfBirth) {
+        profileForm.setValue('dateOfBirth', new Date(userProfile.dateOfBirth));
+      }
+      if (userProfile.role) {
+        profileForm.setValue('role', userProfile.role);
+      }
+    } else if (user?.user_metadata?.full_name) {
+      profileForm.setValue('fullName', user.user_metadata.full_name);
+    }
+  }, [userProfile, user, profileForm]);
+
   const handleProfileComplete = useCallback(
     async (values: ProfileFormValues) => {
-      if (!user) return;
+      if (!user) {
+        toast.error("Authentication Error", {
+          description: "You must be logged in to complete your profile."
+        });
+        navigate('/auth');
+        return;
+      }
 
       setIsLoading(true);
+      console.log("Attempting to complete profile for user:", user.id);
+      
       try {
         const today = new Date();
         const birthDate = new Date(values.dateOfBirth);
@@ -88,6 +117,15 @@ const CompleteProfile = () => {
         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
+
+        console.log("Updating profile with data:", {
+          user_id: user.id,
+          full_name: values.fullName,
+          age,
+          role: values.role,
+          date_of_birth: values.dateOfBirth.toISOString(),
+          is_complete: true
+        });
 
         const { error: profileError } = await supabase
           .from('user_profiles')
@@ -103,43 +141,40 @@ const CompleteProfile = () => {
 
         if (profileError) {
           console.error('Profile update error:', profileError);
-          toast({
-            title: 'Error',
-            description: profileError.message,
-            variant: 'destructive',
+          toast.error("Profile Update Failed", {
+            description: profileError.message || "Failed to update your profile."
           });
           return;
         }
 
+        console.log("Profile updated successfully, refreshing profile data");
         await refreshProfile();
-
-        toast({
-          title: 'Profile Updated',
-          description: 'Your profile has been completed successfully.',
+        
+        toast.success("Profile Updated", {
+          description: "Your profile has been completed successfully."
         });
 
+        // Short delay before redirect
         setTimeout(() => {
           navigate('/');
         }, 500);
       } catch (error: unknown) {
+        console.error("Unexpected error during profile update:", error);
+        
         if (error instanceof Error) {
-          toast({
-            title: 'Error',
-            description: error.message || 'An error occurred while updating your profile.',
-            variant: 'destructive',
+          toast.error("Error", {
+            description: error.message || "An error occurred while updating your profile."
           });
         } else {
-          toast({
-            title: 'Error',
-            description: 'An unknown error occurred.',
-            variant: 'destructive',
+          toast.error("Error", {
+            description: "An unknown error occurred."
           });
         }
       } finally {
         setIsLoading(false);
       }
     },
-    [user, navigate, refreshProfile, toast]
+    [user, navigate, refreshProfile, uiToast]
   );
 
   return (

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,7 +35,7 @@ const ThemeInitializer = () => {
   return null;
 };
 
-// Protected route component with profile check
+// Improved Protected route component with profile check
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, userProfile, loading } = useAuth();
   
@@ -49,8 +50,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/auth" replace />;
   }
   
-  if (userProfile === null || userProfile?.isComplete !== true) {
-    console.log("Profile incomplete, redirecting to /complete-profile", userProfile);
+  // Check if profile exists and is complete
+  const profileComplete = userProfile && userProfile.isComplete === true;
+  
+  console.log("Profile check:", { 
+    exists: Boolean(userProfile), 
+    isComplete: userProfile?.isComplete, 
+    complete: profileComplete 
+  });
+  
+  if (!profileComplete) {
+    console.log("Profile incomplete, redirecting to /complete-profile");
     return <Navigate to="/complete-profile" replace />;
   }
   
@@ -58,9 +68,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Auth callback handler
+// Auth callback handler with improved logging
 const AuthCallback = () => {
   const { user, userProfile, loading } = useAuth();
+  
+  console.log("Auth callback check:", { 
+    user: Boolean(user), 
+    profile: Boolean(userProfile), 
+    isComplete: userProfile?.isComplete 
+  });
   
   if (loading) {
     return <div className="h-screen flex items-center justify-center">
@@ -69,13 +85,16 @@ const AuthCallback = () => {
   }
   
   if (!user) {
+    console.log("Callback: No user, redirecting to /auth");
     return <Navigate to="/auth" replace />;
   }
   
   if (!userProfile?.isComplete) {
+    console.log("Callback: Profile incomplete, redirecting to /complete-profile");
     return <Navigate to="/complete-profile" replace />;
   }
   
+  console.log("Callback: All checks passed, redirecting to home");
   return <Navigate to="/" replace />;
 };
 

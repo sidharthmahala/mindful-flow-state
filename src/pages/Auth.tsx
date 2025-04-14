@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ import { useForm, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { Leaf, Mail, Lock } from 'lucide-react';
+import { toast } from 'sonner';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -109,8 +111,21 @@ const Auth = () => {
   const defaultEmail = locationState?.email || '';
 
   useEffect(() => {
+    // Clear session storage to ensure a fresh login attempt
+    sessionStorage.clear();
+    
+    // If user is already logged in and has a complete profile, redirect
     if (user) {
-      navigate(userProfile?.isComplete ? '/' : '/complete-profile');
+      console.log("User already logged in:", user.email);
+      console.log("User profile:", userProfile);
+      
+      if (userProfile?.isComplete) {
+        console.log("Profile is complete, redirecting to home");
+        navigate('/');
+      } else {
+        console.log("Profile incomplete, redirecting to complete profile");
+        navigate('/complete-profile');
+      }
     }
   }, [user, userProfile, navigate]);
 
@@ -132,11 +147,27 @@ const Auth = () => {
   }, [defaultEmail, loginForm, forgotPasswordForm]);
 
   const handleLogin = useCallback(async (values: LoginFormValues) => {
+    console.log("Login attempt with email:", values.email);
     setIsLoading(true);
+    
     try {
       const { error, isNewUser } = await signIn(values.email, values.password);
-      if (!error) return;
-      if (isNewUser) navigate('/signup', { state: { email: values.email } });
+      
+      if (error) {
+        console.log("Login error:", error);
+        
+        if (isNewUser) {
+          toast.info("Account not found", {
+            description: "No account found with this email. Please sign up."
+          });
+          
+          navigate('/signup', { state: { email: values.email } });
+        }
+      } else {
+        console.log("Login successful");
+      }
+    } catch (error) {
+      console.error("Unexpected login error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -146,6 +177,9 @@ const Auth = () => {
     setIsLoading(true);
     try {
       await resetPassword(values.email);
+      toast.success("Password Reset Email Sent", {
+        description: "Please check your email for instructions."
+      });
       setMode('login');
     } finally {
       setIsLoading(false);

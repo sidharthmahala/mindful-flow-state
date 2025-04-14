@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Database } from '@/integrations/supabase/types';
+import { toast as sonnerToast } from 'sonner';
 
 type UserProfile = {
   fullName: string;
@@ -36,12 +36,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   const refreshProfile = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log("No user ID available for profile refresh");
+      return;
+    }
     
     try {
       console.log("Refreshing profile for user:", user.id);
       
-      // Try to fetch from user_profiles first (new table)
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
@@ -56,14 +58,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           gender: null, // For backward compatibility
           role: profileData.role as string | null,
           dateOfBirth: profileData.date_of_birth as string | null,
-          isComplete: profileData.is_complete as boolean || false
+          isComplete: Boolean(profileData.is_complete) || false
         });
         return;
       } else {
         console.log("No profile found in user_profiles, error:", profileError);
       }
       
-      // Fall back to old 'profiles' table if user_profiles doesn't have data
       const { data: legacyData, error: legacyError } = await supabase
         .from('profiles')
         .select('*')
@@ -82,7 +83,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
       } else {
         console.log("No profile found in legacy table either:", legacyError);
-        // No profile found in either table
         setUserProfile(null);
       }
     } catch (error) {
@@ -91,12 +91,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log("Setting up auth state listener");
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log("Auth state changed:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        setLoading(false);
         
         if (currentSession?.user) {
           console.log("User authenticated, refreshing profile");
@@ -106,6 +107,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           setUserProfile(null);
         }
+        
+        setLoading(false);
       }
     );
 
@@ -128,49 +131,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      // First, try to sign in
+      console.log("Attempting to sign in with email:", email);
+      
+      const { data: userData, error: userError } = await supabase
+        .from('user_profiles')
+        .select('user_id')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .maybeSingle();
+      
+      if (userError) {
+        console.log("Error checking if user exists:", userError);
+      }
+      
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
-        // If login fails, check if it's because the user doesn't exist
+        console.error("Login error:", error.message);
+        
         if (error.message.includes('Invalid login credentials') || 
             error.message.includes('Email not confirmed') ||
             error.message.toLowerCase().includes('user not found')) {
           
-          // Try a sign-up attempt to see if user exists
-          const { error: signUpCheckError } = await supabase.auth.signUp({
-            email,
-            password,
+          sonnerToast.error("Login Failed", {
+            description: "Invalid email or password. Please try again.",
           });
           
-          // If this error mentions already registered, user exists but password is wrong
-          const isNewUser = !signUpCheckError || 
-            !signUpCheckError.message.includes('already registered');
-          
-          if (isNewUser) {
-            toast({
-              title: "User not found",
-              description: "No account found with this email. Please sign up.",
-              variant: "destructive",
-            });
-            return { error, isNewUser: true };
-          }
+          return { error };
         }
         
-        toast({
-          title: "Login Failed",
-          description: error.message || "Invalid credentials. Please try again.",
-          variant: "destructive",
+        sonnerToast.error("Login Failed", {
+          description: error.message || "An error occurred during login.",
         });
+        
+        return { error };
       }
       
-      return { error };
-    } catch (error: any) {
-      toast({
-        title: "Login Failed",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
+      sonnerToast.success("Login Successful", {
+        description: "You are now logged in.",
       });
+      
+      return { error: null };
+    } catch (error: any) {
+      console.error("Unexpected error during login:", error);
+      
+      sonnerToast.error("Login Failed", {
+        description: error.message || "An unexpected error occurred",
+      });
+      
       return { error };
     }
   };
@@ -205,22 +212,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, userData: { fullName: string; age: number; role?: string; dateOfBirth?: string }) => {
     try {
-      const { error: checkError } = await supabase.auth.signUp({
+      console.log("Attempting signup for email:", email);
+      
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
-        password: 'temp-password-for-check',
-      });
-      
-      if (checkError && checkError.message.includes('already registered')) {
-        toast({
-          title: "Sign up Failed",
-          description: "This email is already registered. Please log in instead.",
-          variant: "destructive",
-        });
-        return { error: checkError };
-      }
-      
-      const { error, data } = await supabase.auth.signUp({ 
-        email, 
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
@@ -230,45 +225,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
       
-      if (error) {
-        toast({
-          title: "Sign up Failed",
-          description: error.message,
-          variant: "destructive",
+      if (signUpError) {
+        console.error("Signup error:", signUpError);
+        sonnerToast.error("Sign up Failed", {
+          description: signUpError.message || "Failed to create account.",
         });
-      } else {
-        if (data?.user) {
-          // Insert into user_profiles table
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .upsert({ 
-              user_id: data.user.id,
-              full_name: userData.fullName,
-              age: userData.age,
-              role: userData.role || null,
-              date_of_birth: userData.dateOfBirth || null,
-              is_complete: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-          
-          if (profileError) {
-            console.error('Error saving profile data:', profileError);
-          }
-        }
-        
-        toast({
-          title: "Sign up Successful",
-          description: "Please check your email for verification.",
-        });
+        return { error: signUpError };
       }
       
-      return { error };
+      if (data?.user) {
+        console.log("User created, saving profile data for:", data.user.id);
+        
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .upsert({ 
+            user_id: data.user.id,
+            full_name: userData.fullName,
+            age: userData.age,
+            role: userData.role || null,
+            date_of_birth: userData.dateOfBirth || null,
+            is_complete: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        
+        if (profileError) {
+          console.error('Error saving profile data:', profileError);
+          sonnerToast.error("Profile Creation Error", {
+            description: "Your account was created but we couldn't save your profile details.",
+          });
+        } else {
+          sonnerToast.success("Sign up Successful", {
+            description: "Account created successfully. You can now log in.",
+          });
+        }
+      }
+      
+      return { error: null };
     } catch (error: any) {
-      toast({
-        title: "Sign up Failed",
+      console.error("Unexpected signup error:", error);
+      sonnerToast.error("Sign up Failed", {
         description: error.message || "An unexpected error occurred",
-        variant: "destructive",
       });
       return { error };
     }
