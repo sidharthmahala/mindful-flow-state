@@ -30,7 +30,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
-import { Leaf, Calendar, Mail, User } from 'lucide-react';
+import { Leaf, Calendar, Mail, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -47,6 +47,186 @@ const profileSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
+
+// Custom DatePicker component with year navigation
+const CustomDatePicker = ({ field, form }) => {
+  const [calendarView, setCalendarView] = useState<'days' | 'months' | 'years'>('days');
+  const [viewDate, setViewDate] = useState<Date>(field.value || new Date());
+  const [decades, setDecades] = useState<number[]>([]);
+  
+  useEffect(() => {
+    if (calendarView === 'years') {
+      const currentDecade = Math.floor(viewDate.getFullYear() / 10) * 10;
+      const decadeYears = Array.from({ length: 12 }, (_, i) => currentDecade - 10 + i);
+      setDecades(decadeYears);
+    }
+  }, [calendarView, viewDate]);
+
+  const handleMonthSelect = (month: number) => {
+    const newDate = new Date(viewDate);
+    newDate.setMonth(month);
+    setViewDate(newDate);
+    setCalendarView('days');
+  };
+
+  const handleYearSelect = (year: number) => {
+    const newDate = new Date(viewDate);
+    newDate.setFullYear(year);
+    setViewDate(newDate);
+    setCalendarView('months');
+  };
+
+  const nextDecade = () => {
+    const newDate = new Date(viewDate);
+    newDate.setFullYear(newDate.getFullYear() + 10);
+    setViewDate(newDate);
+  };
+
+  const prevDecade = () => {
+    const newDate = new Date(viewDate);
+    newDate.setFullYear(newDate.getFullYear() - 10);
+    setViewDate(newDate);
+  };
+
+  return (
+    <FormItem className="flex flex-col">
+      <FormLabel>Date of Birth</FormLabel>
+      <Popover>
+        <PopoverTrigger asChild>
+          <FormControl>
+            <Button
+              variant="outline"
+              className={`w-full pl-10 text-left font-normal relative ${
+                !field.value && 'text-muted-foreground'
+              }`}
+            >
+              <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+              {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+            </Button>
+          </FormControl>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          {calendarView === 'days' ? (
+            <div className="p-3 pointer-events-auto">
+              <div className="flex justify-between items-center mb-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setCalendarView('months')}
+                  className="text-sm font-medium"
+                >
+                  {format(viewDate, 'MMMM yyyy')}
+                </Button>
+                <div className="space-x-1 flex items-center">
+                  <Button variant="outline" className="h-7 w-7 bg-transparent p-0" onClick={() => {
+                    const newDate = new Date(viewDate);
+                    newDate.setMonth(newDate.getMonth() - 1);
+                    setViewDate(newDate);
+                  }}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" className="h-7 w-7 bg-transparent p-0" onClick={() => {
+                    const newDate = new Date(viewDate);
+                    newDate.setMonth(newDate.getMonth() + 1);
+                    setViewDate(newDate);
+                  }}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <CalendarComponent
+                mode="single"
+                selected={field.value}
+                onSelect={field.onChange}
+                disabled={(date) =>
+                  date > new Date() || date < new Date('1900-01-01')
+                }
+                month={viewDate}
+                onMonthChange={setViewDate}
+                initialFocus
+                className="p-3 pointer-events-auto border-0"
+              />
+            </div>
+          ) : calendarView === 'months' ? (
+            <div className="p-3 pointer-events-auto">
+              <div className="flex justify-between items-center mb-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setCalendarView('years')}
+                  className="text-sm font-medium"
+                >
+                  {viewDate.getFullYear()}
+                </Button>
+                <div className="space-x-1 flex items-center">
+                  <Button variant="outline" className="h-7 w-7 bg-transparent p-0" onClick={() => {
+                    const newDate = new Date(viewDate);
+                    newDate.setFullYear(newDate.getFullYear() - 1);
+                    setViewDate(newDate);
+                  }}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" className="h-7 w-7 bg-transparent p-0" onClick={() => {
+                    const newDate = new Date(viewDate);
+                    newDate.setFullYear(newDate.getFullYear() + 1);
+                    setViewDate(newDate);
+                  }}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {Array.from({ length: 12 }, (_, i) => (
+                  <Button
+                    key={i}
+                    variant="outline"
+                    className="h-10"
+                    onClick={() => handleMonthSelect(i)}
+                  >
+                    {format(new Date(2000, i, 1), 'MMM')}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 pointer-events-auto">
+              <div className="flex justify-between items-center mb-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-sm font-medium"
+                >
+                  {Math.min(...decades)}-{Math.max(...decades)}
+                </Button>
+                <div className="space-x-1 flex items-center">
+                  <Button variant="outline" className="h-7 w-7 bg-transparent p-0" onClick={prevDecade}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" className="h-7 w-7 bg-transparent p-0" onClick={nextDecade}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {decades.map((year) => (
+                  <Button
+                    key={year}
+                    variant="outline"
+                    className="h-10"
+                    onClick={() => handleYearSelect(year)}
+                  >
+                    {year}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+      <FormMessage />
+    </FormItem>
+  );
+};
 
 const CompleteProfile = () => {
   const { user, userProfile, refreshProfile } = useAuth();
@@ -224,37 +404,7 @@ const CompleteProfile = () => {
                 control={profileForm.control}
                 name="dateOfBirth"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date of Birth</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={`w-full pl-10 text-left font-normal relative ${
-                              !field.value && 'text-muted-foreground'
-                            }`}
-                          >
-                            <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date('1900-01-01')
-                          }
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
+                  <CustomDatePicker field={field} form={profileForm} />
                 )}
               />
 

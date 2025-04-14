@@ -35,9 +35,17 @@ const ThemeInitializer = () => {
   return null;
 };
 
-// Improved Protected route component with profile check
+// Improved Protected route component with enhanced profile check
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, userProfile, loading } = useAuth();
+  const { user, userProfile, loading, refreshProfile } = useAuth();
+  
+  // Effect to refresh profile when component mounts
+  useEffect(() => {
+    if (user && !userProfile) {
+      console.log("Protected route: user exists but no profile, refreshing profile");
+      refreshProfile();
+    }
+  }, [user, userProfile, refreshProfile]);
   
   if (loading) {
     return <div className="h-screen flex items-center justify-center">
@@ -50,13 +58,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/auth" replace />;
   }
   
-  // Check if profile exists and is complete
-  const profileComplete = userProfile && userProfile.isComplete === true;
+  // Improved profile check
+  const profileComplete = 
+    userProfile && 
+    (userProfile.isComplete === true || userProfile.isComplete === 'true');
   
   console.log("Profile check:", { 
     exists: Boolean(userProfile), 
     isComplete: userProfile?.isComplete, 
-    complete: profileComplete 
+    isCompleteBool: Boolean(userProfile?.isComplete),
+    complete: profileComplete,
+    typeOf: typeof userProfile?.isComplete
   });
   
   if (!profileComplete) {
@@ -70,7 +82,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Auth callback handler with improved logging
 const AuthCallback = () => {
-  const { user, userProfile, loading } = useAuth();
+  const { user, userProfile, loading, refreshProfile } = useAuth();
+  
+  // Refresh profile on mount to ensure we have the latest data
+  useEffect(() => {
+    if (user) {
+      console.log("Auth callback: refreshing user profile");
+      refreshProfile();
+    }
+  }, [user, refreshProfile]);
   
   console.log("Auth callback check:", { 
     user: Boolean(user), 
@@ -89,7 +109,12 @@ const AuthCallback = () => {
     return <Navigate to="/auth" replace />;
   }
   
-  if (!userProfile?.isComplete) {
+  // Improved profile completion check
+  const profileComplete = 
+    userProfile && 
+    (userProfile.isComplete === true || userProfile.isComplete === 'true');
+    
+  if (!profileComplete) {
     console.log("Callback: Profile incomplete, redirecting to /complete-profile");
     return <Navigate to="/complete-profile" replace />;
   }
