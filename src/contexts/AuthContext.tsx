@@ -54,8 +54,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (profileData) {
         console.log("Found profile in user_profiles:", profileData);
         
-        // Fixed the redundant boolean comparison
-        const isComplete = profileData.is_complete === true;
+        // Properly convert to boolean using Boolean()
+        const isComplete = Boolean(profileData.is_complete);
         
         setUserProfile({
           fullName: profileData.full_name as string,

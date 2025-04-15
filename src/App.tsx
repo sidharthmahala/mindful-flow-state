@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -57,8 +58,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/auth" replace />;
   }
   
-  // Fixed profile check - removed redundant comparison
-  const profileComplete = userProfile && userProfile.isComplete === true;
+  // Fixed boolean check for profile completion
+  const profileComplete = userProfile && Boolean(userProfile.isComplete);
   
   console.log("Profile check:", { 
     exists: Boolean(userProfile), 
@@ -106,8 +107,8 @@ const AuthCallback = () => {
     return <Navigate to="/auth" replace />;
   }
   
-  // Fixed profile completion check - removed redundant comparison
-  const profileComplete = userProfile && userProfile.isComplete === true;
+  // Fixed boolean check for profile completion
+  const profileComplete = userProfile && Boolean(userProfile.isComplete);
     
   if (!profileComplete) {
     console.log("Callback: Profile incomplete, redirecting to /complete-profile");
