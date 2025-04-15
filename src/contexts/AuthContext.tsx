@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,7 +54,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (profileData) {
         console.log("Found profile in user_profiles:", profileData);
         
-        const isComplete = profileData.is_complete === true || profileData.is_complete === true;
+        // Fixed the redundant boolean comparison
+        const isComplete = profileData.is_complete === true;
         
         setUserProfile({
           fullName: profileData.full_name as string,
