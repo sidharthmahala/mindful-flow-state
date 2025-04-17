@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,6 @@ import { Leaf, Calendar, Mail, User, ChevronLeft, ChevronRight } from 'lucide-re
 import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -48,7 +46,6 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
-// Custom DatePicker component with year navigation
 const CustomDatePicker = ({ field, form }) => {
   const [calendarView, setCalendarView] = useState<'days' | 'months' | 'years'>('days');
   const [viewDate, setViewDate] = useState<Date>(field.value || new Date());
@@ -231,7 +228,6 @@ const CustomDatePicker = ({ field, form }) => {
 const CompleteProfile = () => {
   const { user, userProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const { toast: uiToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -261,7 +257,6 @@ const CompleteProfile = () => {
     },
   });
 
-  // Update form values when userProfile changes
   useEffect(() => {
     if (userProfile) {
       profileForm.setValue('fullName', userProfile.fullName || '');
@@ -334,7 +329,6 @@ const CompleteProfile = () => {
           description: "Your profile has been completed successfully."
         });
 
-        // Short delay before redirect
         setTimeout(() => {
           navigate('/');
         }, 500);
@@ -354,7 +348,7 @@ const CompleteProfile = () => {
         setIsLoading(false);
       }
     },
-    [user, navigate, refreshProfile, uiToast]
+    [user, navigate, refreshProfile]
   );
 
   return (

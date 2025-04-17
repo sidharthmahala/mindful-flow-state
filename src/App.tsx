@@ -59,17 +59,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   // Fixed boolean check for profile completion
-  const profileComplete = userProfile && Boolean(userProfile.isComplete);
-  
-  console.log("Profile check:", { 
-    exists: Boolean(userProfile), 
-    isComplete: userProfile?.isComplete, 
-    isCompleteBool: Boolean(userProfile?.isComplete),
-    complete: profileComplete,
-    typeOf: typeof userProfile?.isComplete
-  });
-  
-  if (!profileComplete) {
+  if (!userProfile?.isComplete) {
     console.log("Profile incomplete, redirecting to /complete-profile");
     return <Navigate to="/complete-profile" replace />;
   }
@@ -108,9 +98,7 @@ const AuthCallback = () => {
   }
   
   // Fixed boolean check for profile completion
-  const profileComplete = userProfile && Boolean(userProfile.isComplete);
-    
-  if (!profileComplete) {
+  if (!userProfile?.isComplete) {
     console.log("Callback: Profile incomplete, redirecting to /complete-profile");
     return <Navigate to="/complete-profile" replace />;
   }

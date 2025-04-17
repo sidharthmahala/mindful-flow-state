@@ -39,42 +39,77 @@ export type Database = {
       user_profiles: {
         Row: {
           age: number | null
-          created_at: string | null
+          created_at: string
           date_of_birth: string | null
           full_name: string | null
           id: string
-          is_complete: boolean | null
+          is_complete: boolean
           role: string | null
-          updated_at: string | null
+          updated_at: string
           user_id: string
         }
         Insert: {
           age?: number | null
-          created_at?: string | null
+          created_at?: string
           date_of_birth?: string | null
           full_name?: string | null
           id?: string
-          is_complete?: boolean | null
+          is_complete?: boolean
           role?: string | null
-          updated_at?: string | null
+          updated_at?: string
           user_id: string
         }
         Update: {
           age?: number | null
-          created_at?: string | null
+          created_at?: string
           date_of_birth?: string | null
           full_name?: string | null
           id?: string
-          is_complete?: boolean | null
+          is_complete?: boolean
           role?: string | null
-          updated_at?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      all_profiles: {
+        Row: {
+          age: number | null
+          created_at: string | null
+          date_of_birth: string | null
+          full_name: string | null
+          id: string | null
+          is_complete: boolean | null
+          role: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_complete?: boolean | null
+          role?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_complete?: boolean | null
+          role?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

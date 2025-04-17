@@ -8,7 +8,6 @@ import { toast as sonnerToast } from 'sonner';
 type UserProfile = {
   fullName: string;
   age: number | null;
-  gender: string | null;
   role: string | null;
   dateOfBirth: string | null;
   isComplete: boolean;
@@ -49,47 +48,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .from('user_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
+      
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        return;
+      }
       
       if (profileData) {
-        console.log("Found profile in user_profiles:", profileData);
+        console.log("Found profile:", profileData);
         
-        // Properly convert to boolean using Boolean()
+        // Convert isComplete to boolean explicitly
         const isComplete = Boolean(profileData.is_complete);
         
         setUserProfile({
-          fullName: profileData.full_name as string,
-          age: profileData.age as number | null,
-          gender: null, // For backward compatibility
-          role: profileData.role as string | null,
-          dateOfBirth: profileData.date_of_birth as string | null,
+          fullName: profileData.full_name || '',
+          age: profileData.age || null,
+          role: profileData.role || null,
+          dateOfBirth: profileData.date_of_birth || null,
           isComplete: isComplete
         });
         
         console.log("Profile set with isComplete:", isComplete);
-        return;
       } else {
-        console.log("No profile found in user_profiles, error:", profileError);
-      }
-      
-      const { data: legacyData, error: legacyError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
-      if (legacyData) {
-        console.log("Found profile in legacy profiles:", legacyData);
-        setUserProfile({
-          fullName: legacyData.full_name as string,
-          age: legacyData.age as number | null,
-          gender: legacyData.gender as string | null,
-          role: legacyData.gender as string | null, // For backward compatibility
-          dateOfBirth: null,
-          isComplete: false
-        });
-      } else {
-        console.log("No profile found in legacy table either:", legacyError);
+        console.log("No profile found for user");
         setUserProfile(null);
       }
     } catch (error) {
@@ -100,6 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log("Setting up auth state listener");
     
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log("Auth state changed:", event);
@@ -108,6 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (currentSession?.user) {
           console.log("User authenticated, refreshing profile");
+          // Use setTimeout to prevent potential deadlocks
           setTimeout(() => {
             refreshProfile();
           }, 0);
@@ -119,6 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession?.user?.id ? "User logged in" : "No user");
       setSession(currentSession);
@@ -139,16 +124,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       console.log("Attempting to sign in with email:", email);
-      
-      const { data: userData, error: userError } = await supabase
-        .from('user_profiles')
-        .select('user_id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .maybeSingle();
-      
-      if (userError) {
-        console.log("Error checking if user exists:", userError);
-      }
       
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       
