@@ -29,7 +29,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
-import { Leaf, Calendar, Mail, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Leaf, Calendar, Mail, User, ChevronLeft, ChevronRight, Home } from 'lucide-react';
 import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -355,7 +355,16 @@ const CompleteProfile = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-4 relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute left-0 top-0"
+              onClick={() => navigate('/')}
+              aria-label="Back to Home"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
             <Leaf className="h-10 w-10 text-[#64d8a3]" />
           </div>
           <CardTitle className="text-2xl font-bold">Complete Your Profile</CardTitle>

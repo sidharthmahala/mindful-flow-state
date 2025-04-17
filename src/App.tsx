@@ -35,7 +35,7 @@ const ThemeInitializer = () => {
   return null;
 };
 
-// Improved Protected route component with enhanced profile check
+// Improved Protected route component with proper profile completion check
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, userProfile, loading, refreshProfile } = useAuth();
   
@@ -58,17 +58,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/auth" replace />;
   }
   
-  // Fixed boolean check for profile completion
-  if (userProfile && !userProfile.isComplete) {
+  // Only redirect to complete profile if userProfile exists AND is explicitly marked as not complete
+  if (userProfile && userProfile.isComplete === false) {
     console.log("Profile incomplete, redirecting to /complete-profile");
     return <Navigate to="/complete-profile" replace />;
   }
   
-  console.log("Profile complete, rendering protected content");
+  console.log("Profile check passed, rendering protected content");
   return <>{children}</>;
 };
 
-// Auth callback handler with improved logging
+// Auth callback handler with improved completion check logic
 const AuthCallback = () => {
   const { user, userProfile, loading, refreshProfile } = useAuth();
   
@@ -97,8 +97,8 @@ const AuthCallback = () => {
     return <Navigate to="/auth" replace />;
   }
   
-  // Fixed boolean check for profile completion
-  if (userProfile && !userProfile.isComplete) {
+  // Only redirect to complete profile if userProfile exists AND is explicitly marked as not complete
+  if (userProfile && userProfile.isComplete === false) {
     console.log("Callback: Profile incomplete, redirecting to /complete-profile");
     return <Navigate to="/complete-profile" replace />;
   }

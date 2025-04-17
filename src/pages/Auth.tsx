@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,7 @@ import { z } from 'zod';
 import { useForm, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
-import { Leaf, Mail, Lock } from 'lucide-react';
+import { Leaf, Mail, Lock, Home } from 'lucide-react';
 import { toast } from 'sonner';
 
 const loginSchema = z.object({
@@ -111,10 +110,8 @@ const Auth = () => {
   const defaultEmail = locationState?.email || '';
 
   useEffect(() => {
-    // Clear session storage to ensure a fresh login attempt
     sessionStorage.clear();
     
-    // If user is already logged in and has a complete profile, redirect
     if (user) {
       console.log("User already logged in:", user.email);
       console.log("User profile:", userProfile);
@@ -156,7 +153,9 @@ const Auth = () => {
       if (error) {
         console.log("Login error:", error);
         
-        if (isNewUser) {
+        if (error.message?.toLowerCase().includes('invalid login credentials') || 
+            error.message?.toLowerCase().includes('user not found') ||
+            isNewUser) {
           toast.info("Account not found", {
             description: "No account found with this email. Please sign up."
           });
@@ -240,7 +239,16 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-4 relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute left-0 top-0"
+              onClick={() => navigate('/')}
+              aria-label="Back to Home"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
             <Leaf className="h-10 w-10 text-[#64d8a3]" />
           </div>
           <CardTitle className="text-2xl font-bold">{titles[mode]}</CardTitle>

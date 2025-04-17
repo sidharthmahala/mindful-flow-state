@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,7 +57,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (profileData) {
         console.log("Found profile:", profileData);
         
-        // Convert isComplete to boolean explicitly
         const isComplete = Boolean(profileData.is_complete);
         
         setUserProfile({
@@ -82,7 +80,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log("Setting up auth state listener");
     
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log("Auth state changed:", event);
@@ -91,7 +88,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (currentSession?.user) {
           console.log("User authenticated, refreshing profile");
-          // Use setTimeout to prevent potential deadlocks
           setTimeout(() => {
             refreshProfile();
           }, 0);
@@ -103,7 +99,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession?.user?.id ? "User logged in" : "No user");
       setSession(currentSession);
@@ -130,15 +125,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) {
         console.error("Login error:", error.message);
         
-        if (error.message.includes('Invalid login credentials') || 
-            error.message.includes('Email not confirmed') ||
-            error.message.toLowerCase().includes('user not found')) {
-          
+        const userNotFoundMessages = [
+          'invalid login credentials',
+          'email not confirmed',
+          'user not found'
+        ];
+        
+        const isUserNotFound = userNotFoundMessages.some(msg => 
+          error.message.toLowerCase().includes(msg.toLowerCase())
+        );
+        
+        if (isUserNotFound) {
           sonnerToast.error("Login Failed", {
             description: "Invalid email or password. Please try again.",
           });
           
-          return { error };
+          return { error, isNewUser: true };
         }
         
         sonnerToast.error("Login Failed", {

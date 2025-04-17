@@ -1,5 +1,5 @@
 
-import { Leaf, PanelLeft, User } from 'lucide-react';
+import { Leaf, PanelLeft, User, Home } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
 import { useSidebar } from './ui/sidebar';
@@ -32,15 +32,19 @@ const NavBar = () => {
           >
             <PanelLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold text-foreground flex items-center">
+          <Button
+            variant="ghost"
+            className="flex items-center"
+            onClick={() => navigate('/')}
+          >
             <Leaf className="mr-2 text-[#64d8a3] w-5 h-5" />
-            <span>Clarity</span>
-          </h1>
+            <span className="text-xl font-semibold text-foreground">Clarity</span>
+          </Button>
         </div>
         <div className="flex items-center space-x-2">
           <ThemeToggle />
           
-          {user && userProfile ? (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -48,7 +52,7 @@ const NavBar = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{userProfile.fullName || user.email}</DropdownMenuLabel>
+                <DropdownMenuLabel>{userProfile?.fullName || user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/complete-profile')}>
                   Edit Profile
